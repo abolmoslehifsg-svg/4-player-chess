@@ -1172,6 +1172,7 @@ function createInitialState() {
     kings: createInitialKings(),
     currentPlayerIndex: 0,
     lastMove: null,
+    epTargets: [],
     moveHistory: [],
     log: [],
     gameOver: false,
@@ -1207,7 +1208,7 @@ function getPawnAttackSquares(r, c, player) {
   return squares;
 }
 
-function generatePseudoMoves(board, r, c, lastMove) {
+function generatePseudoMoves(board, r, c, lastMove, epTargets) {
   const piece = board[r][c];
   if (!piece) return [];
   const moves = [];
@@ -1252,10 +1253,15 @@ function generatePseudoMoves(board, r, c, lastMove) {
         const target = board[nr][nc];
         if (target && TEAM_OF[target.player] !== myTeam) {
           moves.push({ row: nr, col: nc });
-        } else if (!target && lastMove && lastMove.isDoubleStep) {
-          const ep = lastMove.to;
-          if (ep.row === r && ep.col === nc && TEAM_OF[lastMove.piece.player] !== myTeam) {
-            moves.push({ row: nr, col: nc, enPassant: true });
+        } else if (!target && epTargets && epTargets.length) {
+          for (const ep of epTargets) {
+            if (ep.team === myTeam) continue;
+            // Destination = square the enemy pawn passed through; our pawn on same rank, adjacent file
+            if (ep.captureRow === nr && ep.captureCol === nc &&
+                ep.pawnRow === r && Math.abs(ep.pawnCol - c) === 1) {
+              moves.push({ row: nr, col: nc, enPassant: true });
+              break;
+            }
           }
         }
       }
@@ -1270,7 +1276,7 @@ function getAttackSquares(board, r, c) {
   const piece = board[r][c];
   if (!piece) return [];
   if (piece.type === 'P') return getPawnAttackSquares(r, c, piece.player);
-  return generatePseudoMoves(board, r, c, null);
+  return generatePseudoMoves(board, r, c, null, null);
 }
 
 function isSquareAttacked(board, row, col, byTeam) {
@@ -1298,16 +1304,31 @@ function shouldProtectKing(kings, player) {
   return !!k && k.row !== null && k.row !== undefined && k.status !== 'checkmated';
 }
 
-function applyMoveToBoard(board, from, to, lastMove, promotionType) {
+function applyMoveToBoard(board, from, to, lastMove, promotionType, epTargets) {
   const piece = board[from.row][from.col];
   const info = { capturedPiece: null, isEnPassant: false, isPromotion: false };
   let capturedPiece = board[to.row][to.col];
 
   if (piece.type === 'P' && from.col !== to.col && !capturedPiece) {
-    if (lastMove && lastMove.isDoubleStep && lastMove.to.row === from.row && lastMove.to.col === to.col) {
-      capturedPiece = board[from.row][to.col];
-      board[from.row][to.col] = null;
-      info.isEnPassant = true;
+    const list = (epTargets && epTargets.length) ? epTargets : (
+      lastMove && lastMove.isDoubleStep ? [{
+        captureRow: (lastMove.from.row + lastMove.to.row) >> 1,
+        captureCol: lastMove.to.col,
+        pawnRow: lastMove.to.row,
+        pawnCol: lastMove.to.col,
+        team: lastMove.piece ? TEAM_OF[lastMove.piece.player] : null,
+      }] : []
+    );
+    for (const ep of list) {
+      if (ep.captureRow === to.row && ep.captureCol === to.col &&
+          ep.pawnRow === from.row && Math.abs(ep.pawnCol - from.col) === 1) {
+        capturedPiece = board[ep.pawnRow][ep.pawnCol];
+        if (capturedPiece) {
+          board[ep.pawnRow][ep.pawnCol] = null;
+          info.isEnPassant = true;
+        }
+        break;
+      }
     }
   }
   info.capturedPiece = capturedPiece || null;
@@ -1330,10 +1351,10 @@ function applyMoveToBoard(board, from, to, lastMove, promotionType) {
 }
 
 function generateLegalMovesForPiece(state, player, r, c) {
-  const { board, kings, lastMove } = state;
+  const { board, kings, lastMove, epTargets } = state;
   const piece = board[r][c];
   if (!piece || piece.player !== player) return [];
-  const pseudo = generatePseudoMoves(board, r, c, lastMove);
+  const pseudo = generatePseudoMoves(board, r, c, lastMove, epTargets);
 
   // A king is never captured in this game. Checkmate is a state transition,
   // not a normal capture. This also prevents the UI/AI from ever presenting
@@ -1352,7 +1373,7 @@ function generateLegalMovesForPiece(state, player, r, c) {
   const legal = [];
   for (const mv of noKingCapture) {
     const simBoard = board.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
-    applyMoveToBoard(simBoard, { row: r, col: c }, { row: mv.row, col: mv.col }, lastMove);
+    applyMoveToBoard(simBoard, { row: r, col: c }, { row: mv.row, col: mv.col }, lastMove, undefined, epTargets);
     const kingPos = piece.type === 'K'
       ? { row: mv.row, col: mv.col }
       : { row: kings[player].row, col: kings[player].col };
@@ -1473,7 +1494,7 @@ function makeMove(state, from, to, promotionType) {
   const afterSquare = squareName(to.row, to.col);
   const isCaptureAttempt = !!board[to.row][to.col];
 
-  const info = applyMoveToBoard(board, from, to, state.lastMove, promotionType);
+  const info = applyMoveToBoard(board, from, to, state.lastMove, promotionType, state.epTargets);
 
   if (piece.type === 'K') {
     state.kings[piece.player].row = to.row;
@@ -1494,8 +1515,38 @@ function makeMove(state, from, to, promotionType) {
     isDoubleStep: piece.type === 'P' && Math.abs(to.row - from.row) === 2,
   };
 
+  // En passant targets: list so teammate double-steps do not erase earlier ones.
+  if (!Array.isArray(state.epTargets)) state.epTargets = [];
+  // Age existing targets first (they survived previous plies)
+  state.epTargets = state.epTargets
+    .map((ep) => ({ ...ep, ttl: ep.ttl - 1 }))
+    .filter((ep) => ep.ttl > 0);
+  // Record a new double-step after aging so it gets full ttl for future plies
+  if (piece.type === 'P' && Math.abs(to.row - from.row) === 2) {
+    const mid = (from.row + to.row) >> 1;
+    state.epTargets.push({
+      captureRow: mid,
+      captureCol: from.col,
+      pawnRow: to.row,
+      pawnCol: to.col,
+      team: TEAM_OF[piece.player],
+      ttl: 3,
+    });
+  }
+  if (info.isEnPassant) {
+    state.epTargets = state.epTargets.filter((ep) =>
+      !(ep.captureRow === to.row && ep.captureCol === to.col)
+    );
+  }
+  // Drop slots whose pawn is no longer on that square
+  state.epTargets = state.epTargets.filter((ep) => {
+    const row = state.board[ep.pawnRow];
+    const p = row && row[ep.pawnCol];
+    return p && p.type === 'P' && TEAM_OF[p.player] === ep.team;
+  });
+
   const captured = isCaptureAttempt || info.isEnPassant;
-  const notation = `${piece.player}: ${pieceLetterForNotation(piece.type)}${beforeSquare}${captured ? 'x' : '-'}${afterSquare}${info.isPromotion ? '=' + info.promotedTo : ''}`;
+  const notation = `${piece.player}: ${pieceLetterForNotation(piece.type)}${beforeSquare}${captured ? 'x' : '-'}${afterSquare}${info.isEnPassant ? ' e.p.' : ''}${info.isPromotion ? '=' + info.promotedTo : ''}`;
   state.moveHistory.push(notation);
 
   state.selected = null;
@@ -1646,7 +1697,7 @@ function evaluate(s) {
       const sign = TEAM_OF[piece.player] === 'blue' ? 1 : -1;
       score += sign * (PIECE_VALUE[piece.type] + positionalBonus(piece, r, c));
       // cheap mobility proxy: pseudo-moves only, no self-check filtering
-      score += sign * generatePseudoMoves(s.board, r, c, s.lastMove).length * MOBILITY_WEIGHT;
+      score += sign * generatePseudoMoves(s.board, r, c, s.lastMove, s.epTargets).length * MOBILITY_WEIGHT;
     }
   }
   for (const p of PLAYERS) {
@@ -2232,6 +2283,7 @@ function createInitialState() {
     kings: createInitialKings(),
     currentPlayerIndex: 0,
     lastMove: null,
+    epTargets: [],
     moveHistory: [],
     log: [],
     gameOver: false,
@@ -2267,7 +2319,7 @@ function getPawnAttackSquares(r, c, player) {
   return squares;
 }
 
-function generatePseudoMoves(board, r, c, lastMove) {
+function generatePseudoMoves(board, r, c, lastMove, epTargets) {
   const piece = board[r][c];
   if (!piece) return [];
   const moves = [];
@@ -2312,10 +2364,15 @@ function generatePseudoMoves(board, r, c, lastMove) {
         const target = board[nr][nc];
         if (target && TEAM_OF[target.player] !== myTeam) {
           moves.push({ row: nr, col: nc });
-        } else if (!target && lastMove && lastMove.isDoubleStep) {
-          const ep = lastMove.to;
-          if (ep.row === r && ep.col === nc && TEAM_OF[lastMove.piece.player] !== myTeam) {
-            moves.push({ row: nr, col: nc, enPassant: true });
+        } else if (!target && epTargets && epTargets.length) {
+          for (const ep of epTargets) {
+            if (ep.team === myTeam) continue;
+            // Destination = square the enemy pawn passed through; our pawn on same rank, adjacent file
+            if (ep.captureRow === nr && ep.captureCol === nc &&
+                ep.pawnRow === r && Math.abs(ep.pawnCol - c) === 1) {
+              moves.push({ row: nr, col: nc, enPassant: true });
+              break;
+            }
           }
         }
       }
@@ -2330,7 +2387,7 @@ function getAttackSquares(board, r, c) {
   const piece = board[r][c];
   if (!piece) return [];
   if (piece.type === 'P') return getPawnAttackSquares(r, c, piece.player);
-  return generatePseudoMoves(board, r, c, null);
+  return generatePseudoMoves(board, r, c, null, null);
 }
 
 function isSquareAttacked(board, row, col, byTeam) {
@@ -2358,16 +2415,31 @@ function shouldProtectKing(kings, player) {
   return !!k && k.row !== null && k.row !== undefined && k.status !== 'checkmated';
 }
 
-function applyMoveToBoard(board, from, to, lastMove, promotionType) {
+function applyMoveToBoard(board, from, to, lastMove, promotionType, epTargets) {
   const piece = board[from.row][from.col];
   const info = { capturedPiece: null, isEnPassant: false, isPromotion: false };
   let capturedPiece = board[to.row][to.col];
 
   if (piece.type === 'P' && from.col !== to.col && !capturedPiece) {
-    if (lastMove && lastMove.isDoubleStep && lastMove.to.row === from.row && lastMove.to.col === to.col) {
-      capturedPiece = board[from.row][to.col];
-      board[from.row][to.col] = null;
-      info.isEnPassant = true;
+    const list = (epTargets && epTargets.length) ? epTargets : (
+      lastMove && lastMove.isDoubleStep ? [{
+        captureRow: (lastMove.from.row + lastMove.to.row) >> 1,
+        captureCol: lastMove.to.col,
+        pawnRow: lastMove.to.row,
+        pawnCol: lastMove.to.col,
+        team: lastMove.piece ? TEAM_OF[lastMove.piece.player] : null,
+      }] : []
+    );
+    for (const ep of list) {
+      if (ep.captureRow === to.row && ep.captureCol === to.col &&
+          ep.pawnRow === from.row && Math.abs(ep.pawnCol - from.col) === 1) {
+        capturedPiece = board[ep.pawnRow][ep.pawnCol];
+        if (capturedPiece) {
+          board[ep.pawnRow][ep.pawnCol] = null;
+          info.isEnPassant = true;
+        }
+        break;
+      }
     }
   }
   info.capturedPiece = capturedPiece || null;
@@ -2390,10 +2462,10 @@ function applyMoveToBoard(board, from, to, lastMove, promotionType) {
 }
 
 function generateLegalMovesForPiece(state, player, r, c) {
-  const { board, kings, lastMove } = state;
+  const { board, kings, lastMove, epTargets } = state;
   const piece = board[r][c];
   if (!piece || piece.player !== player) return [];
-  const pseudo = generatePseudoMoves(board, r, c, lastMove);
+  const pseudo = generatePseudoMoves(board, r, c, lastMove, epTargets);
 
   // A king is never captured in this game. Checkmate is a state transition,
   // not a normal capture. This also prevents the UI/AI from ever presenting
@@ -2412,7 +2484,7 @@ function generateLegalMovesForPiece(state, player, r, c) {
   const legal = [];
   for (const mv of noKingCapture) {
     const simBoard = board.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
-    applyMoveToBoard(simBoard, { row: r, col: c }, { row: mv.row, col: mv.col }, lastMove);
+    applyMoveToBoard(simBoard, { row: r, col: c }, { row: mv.row, col: mv.col }, lastMove, undefined, epTargets);
     const kingPos = piece.type === 'K'
       ? { row: mv.row, col: mv.col }
       : { row: kings[player].row, col: kings[player].col };
@@ -2533,7 +2605,7 @@ function makeMove(state, from, to, promotionType) {
   const afterSquare = squareName(to.row, to.col);
   const isCaptureAttempt = !!board[to.row][to.col];
 
-  const info = applyMoveToBoard(board, from, to, state.lastMove, promotionType);
+  const info = applyMoveToBoard(board, from, to, state.lastMove, promotionType, state.epTargets);
 
   if (piece.type === 'K') {
     state.kings[piece.player].row = to.row;
@@ -2554,8 +2626,38 @@ function makeMove(state, from, to, promotionType) {
     isDoubleStep: piece.type === 'P' && Math.abs(to.row - from.row) === 2,
   };
 
+  // En passant targets: list so teammate double-steps do not erase earlier ones.
+  if (!Array.isArray(state.epTargets)) state.epTargets = [];
+  // Age existing targets first (they survived previous plies)
+  state.epTargets = state.epTargets
+    .map((ep) => ({ ...ep, ttl: ep.ttl - 1 }))
+    .filter((ep) => ep.ttl > 0);
+  // Record a new double-step after aging so it gets full ttl for future plies
+  if (piece.type === 'P' && Math.abs(to.row - from.row) === 2) {
+    const mid = (from.row + to.row) >> 1;
+    state.epTargets.push({
+      captureRow: mid,
+      captureCol: from.col,
+      pawnRow: to.row,
+      pawnCol: to.col,
+      team: TEAM_OF[piece.player],
+      ttl: 3,
+    });
+  }
+  if (info.isEnPassant) {
+    state.epTargets = state.epTargets.filter((ep) =>
+      !(ep.captureRow === to.row && ep.captureCol === to.col)
+    );
+  }
+  // Drop slots whose pawn is no longer on that square
+  state.epTargets = state.epTargets.filter((ep) => {
+    const row = state.board[ep.pawnRow];
+    const p = row && row[ep.pawnCol];
+    return p && p.type === 'P' && TEAM_OF[p.player] === ep.team;
+  });
+
   const captured = isCaptureAttempt || info.isEnPassant;
-  const notation = `${piece.player}: ${pieceLetterForNotation(piece.type)}${beforeSquare}${captured ? 'x' : '-'}${afterSquare}${info.isPromotion ? '=' + info.promotedTo : ''}`;
+  const notation = `${piece.player}: ${pieceLetterForNotation(piece.type)}${beforeSquare}${captured ? 'x' : '-'}${afterSquare}${info.isEnPassant ? ' e.p.' : ''}${info.isPromotion ? '=' + info.promotedTo : ''}`;
   state.moveHistory.push(notation);
 
   state.selected = null;
@@ -2706,7 +2808,7 @@ function evaluate(s) {
       const sign = TEAM_OF[piece.player] === 'blue' ? 1 : -1;
       score += sign * (PIECE_VALUE[piece.type] + positionalBonus(piece, r, c));
       // cheap mobility proxy: pseudo-moves only, no self-check filtering
-      score += sign * generatePseudoMoves(s.board, r, c, s.lastMove).length * MOBILITY_WEIGHT;
+      score += sign * generatePseudoMoves(s.board, r, c, s.lastMove, s.epTargets).length * MOBILITY_WEIGHT;
     }
   }
   for (const p of PLAYERS) {
