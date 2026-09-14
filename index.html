@@ -4213,8 +4213,20 @@ function onlineOnMessage(msg, via) {
       const cur = PLAYERS[state.currentPlayerIndex];
       if (ONLINE.seats[cur] === 'local') return;
       if (msg.fromSeat && msg.fromSeat !== cur) return;
+      // Host-authoritative validation: the host is the only source of truth
+      // for the shared game, so it must not blindly trust a guest's claimed
+      // move. Two checks close real gaps found by direct testing: (1) the
+      // sender must actually be the client seated at the current player's
+      // seat, not just claim the right seat name; (2) the move itself must
+      // be genuinely legal per the real rules, using the same validated
+      // function the local UI already uses for human clicks - otherwise a
+      // stale/buggy/malicious guest could apply literally any from/to pair
+      // (confirmed: an unchecked message could teleport a piece anywhere).
+      if (ONLINE.seats[cur] !== msg.fromId) return;
       const { from, to, promotionType } = msg;
       if (!from || !to) return;
+      const legalForPiece = generateLegalMovesForPiece(state, cur, from.row, from.col);
+      if (!legalForPiece.some((m) => m.row === to.row && m.col === to.col)) return;
       undoStack.push(cloneState(state));
       const logLenBefore = state.log.length;
       const result = makeMove(state, from, to, promotionType);
