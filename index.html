@@ -346,7 +346,44 @@
     overflow-x:auto;
     padding-bottom:4px;
   }
+  .board-coords{
+    direction:ltr;
+    display:grid;
+    grid-template-columns: 22px auto;
+    grid-template-rows: auto 18px;
+    gap:2px 4px;
+    align-items:stretch;
+    justify-content:center;
+  }
+  .board-coords .coord-ranks{
+    grid-column:1; grid-row:1;
+    display:grid;
+    grid-template-rows: repeat(8, minmax(28px, 56px));
+    align-items:center;
+    justify-items:center;
+    font-size:11px;
+    font-weight:700;
+    color:var(--text-muted);
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    user-select:none;
+  }
+  .board-coords .coord-files{
+    grid-column:2; grid-row:2;
+    display:grid;
+    align-items:center;
+    justify-items:center;
+    font-size:11px;
+    font-weight:700;
+    color:var(--text-muted);
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    user-select:none;
+  }
+  .board-coords .chess-board,
+  .board-coords .chess-board-1v1{
+    grid-column:2; grid-row:1;
+  }
   .chess-board{
+    direction:ltr;
     display:grid;
     grid-template-columns: repeat(16, minmax(28px, 56px));
     grid-template-rows: repeat(8, minmax(28px, 56px));
@@ -579,6 +616,7 @@
   @media (max-width:720px){ .mode-cards{ grid-template-columns:1fr; } }
 
   .chess-board-1v1{
+    direction:ltr;
     display:grid;
     grid-template-columns: repeat(8, minmax(36px, 64px));
     grid-template-rows: repeat(8, minmax(36px, 64px));
@@ -586,6 +624,21 @@
     border-radius:4px;
     overflow:hidden;
     background:var(--sq-dark);
+  }
+  .board-coords.coords-1v1 .coord-ranks{
+    grid-template-rows: repeat(8, minmax(36px, 64px));
+  }
+  .board-coords.coords-1v1 .coord-files{
+    grid-template-columns: repeat(8, minmax(36px, 64px));
+  }
+  .board-coords.coords-4p .coord-files{
+    grid-template-columns: repeat(16, minmax(28px, 56px));
+  }
+  @media (max-width:720px){
+    .board-coords.coords-4p .coord-ranks{ grid-template-rows: repeat(8, minmax(22px, 36px)); }
+    .board-coords.coords-4p .coord-files{ grid-template-columns: repeat(16, minmax(22px, 1fr)); }
+    .board-coords.coords-1v1 .coord-ranks{ grid-template-rows: repeat(8, minmax(28px, 44px)); }
+    .board-coords.coords-1v1 .coord-files{ grid-template-columns: repeat(8, minmax(28px, 1fr)); }
   }
   .chess-board-1v1 .cell{ position:relative; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; }
   .chess-board-1v1 .cell.light{ background:var(--sq-light); }
@@ -857,7 +910,11 @@
         <div class="game-over-banner" id="over1v1"></div>
       </div>
       <div class="board-scroll">
-        <div class="chess-board-1v1" id="board1v1"></div>
+        <div class="board-coords coords-1v1" id="boardCoords1v1">
+          <div class="coord-ranks" id="ranks1v1"></div>
+          <div class="chess-board-1v1" id="board1v1"></div>
+          <div class="coord-files" id="files1v1"></div>
+        </div>
       </div>
       <div class="btn-row" style="max-width:420px;width:100%;margin-top:10px;">
         <button class="action-btn" id="undo1v1Btn" type="button">بازگشت حرکت</button>
@@ -1076,7 +1133,11 @@
       </div>
 
       <div class="board-scroll">
-        <div class="chess-board" id="chessBoard"></div>
+        <div class="board-coords coords-4p" id="boardCoords4p">
+          <div class="coord-ranks" id="ranks4p"></div>
+          <div class="chess-board" id="chessBoard"></div>
+          <div class="coord-files" id="files4p"></div>
+        </div>
       </div>
 
       <div class="team-panel red">
@@ -3386,6 +3447,27 @@ function showMessage(text, kind) {
   el.messageBar.className = 'message-bar ' + (kind || 'info');
 }
 
+function buildCoordLabels4p() {
+  const ranks = document.getElementById('ranks4p');
+  const files = document.getElementById('files4p');
+  if (ranks) {
+    ranks.innerHTML = '';
+    for (let r = 0; r < ROWS; r++) {
+      const d = document.createElement('span');
+      d.textContent = String(ROWS - r); // 8..1
+      ranks.appendChild(d);
+    }
+  }
+  if (files) {
+    files.innerHTML = '';
+    for (let c = 0; c < COLS; c++) {
+      const d = document.createElement('span');
+      d.textContent = FILES[c]; // a..p
+      files.appendChild(d);
+    }
+  }
+}
+
 function buildBoardCells() {
   el.board.innerHTML = '';
   for (let r = 0; r < ROWS; r++) {
@@ -3405,6 +3487,7 @@ function buildBoardCells() {
       el.board.appendChild(cell);
     }
   }
+  buildCoordLabels4p();
 }
 
 function cellEl(r, c) {
@@ -4836,7 +4919,7 @@ function c1Sq(r,c){ return C1.FILES[c] + (8-r); }
 
 function c1InitialBoard(){
   const b = Array.from({length:8},()=>Array(8).fill(null));
-  const back = ['R','N','B','Q','K','B','N','R'];
+  const back = ['R','N','B','Q','K','B','N','R']; // a-h: R N B Q K B N R (standard)
   for(let c=0;c<8;c++){ b[0][c]={type:back[c],color:'b'}; b[7][c]={type:back[c],color:'w'}; }
   for(let c=0;c<8;c++){ b[1][c]={type:'P',color:'b'}; b[6][c]={type:'P',color:'w'}; }
   return b;
@@ -5369,6 +5452,27 @@ function c1Msg(t, kind){
   el1.msg.className = 'message-bar ' + (kind||'info');
 }
 
+function c1BuildCoordLabels(){
+  const ranks = document.getElementById('ranks1v1');
+  const files = document.getElementById('files1v1');
+  if (ranks) {
+    ranks.innerHTML = '';
+    for (let r = 0; r < 8; r++) {
+      const d = document.createElement('span');
+      d.textContent = String(8 - r);
+      ranks.appendChild(d);
+    }
+  }
+  if (files) {
+    files.innerHTML = '';
+    for (let c = 0; c < 8; c++) {
+      const d = document.createElement('span');
+      d.textContent = C1.FILES[c];
+      files.appendChild(d);
+    }
+  }
+}
+
 function c1BuildBoard(){
   if(!el1.board) return;
   el1.board.innerHTML='';
@@ -5379,6 +5483,7 @@ function c1BuildBoard(){
     cell.addEventListener('click', ()=>c1Click(r,c));
     el1.board.appendChild(cell);
   }
+  c1BuildCoordLabels();
 }
 
 function c1Cell(r,c){ return el1.board.children[r*8+c]; }
