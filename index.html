@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-theme="midnight">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,6 +28,73 @@
     --danger:        #d1495b;
     --dead:          #565a68;
   }
+
+  /* Theme: Midnight (default — current 2v2 look) */
+  html[data-theme="midnight"]{
+    --bg:            #14161c;
+    --panel:         #1b1e27;
+    --panel-border:  #2b2f3b;
+    --sq-light:      #2b2f3d;
+    --sq-dark:       #1a1c25;
+    --text:          #e9e6dd;
+    --text-muted:    #8b8f9e;
+    --gold:          #cfa758;
+    --gold-dim:      #7d6a41;
+  }
+
+  /* Theme: Classic Green */
+  html[data-theme="classic"]{
+    --bg:            #1a1f18;
+    --panel:         #222a20;
+    --panel-border:  #3a4536;
+    --sq-light:      #ebecd0;
+    --sq-dark:       #779556;
+    --text:          #f0f2ea;
+    --text-muted:    #9aa892;
+    --gold:          #e8c56b;
+    --gold-dim:      #8a7340;
+  }
+
+  /* Theme: Ivory Light */
+  html[data-theme="ivory"]{
+    --bg:            #e8e4d9;
+    --panel:         #f5f2ea;
+    --panel-border:  #d0cbbd;
+    --sq-light:      #f0e6d0;
+    --sq-dark:       #b58863;
+    --text:          #2a241c;
+    --text-muted:    #6b6358;
+    --gold:          #8b6914;
+    --gold-dim:      #c4a35a;
+  }
+  html[data-theme="ivory"] .piece-1v1.white{ color:#f8f8f8 !important; filter: drop-shadow(0 1px 2px rgba(0,0,0,.7)); }
+  html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: drop-shadow(0 1px 1px rgba(255,255,255,.4)); }
+  html[data-theme="classic"] .piece-1v1.white{ color:#fff !important; filter: drop-shadow(0 1px 2px rgba(0,0,0,.7)); }
+  html[data-theme="classic"] .piece-1v1.black{ color:#1a1a1a !important; filter: drop-shadow(0 1px 1px rgba(255,255,255,.35)); }
+
+  .theme-bar{
+    display:flex; gap:8px; align-items:center; justify-content:center;
+    flex-wrap:wrap; margin-top:12px;
+  }
+  .theme-btn{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    color:var(--text);
+    padding:6px 12px;
+    border-radius:16px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .theme-btn:hover{ border-color:var(--gold-dim); }
+  .theme-btn.active{
+    border-color:var(--gold);
+    color:var(--gold);
+    box-shadow:0 0 0 1px var(--gold-dim);
+  }
+  .theme-label{ font-size:12px; color:var(--text-muted); }
+
 
   *{ box-sizing:border-box; }
 
@@ -706,6 +773,12 @@
     <header class="home-header">
       <h1>شطرنج ۴ نفره</h1>
       <p>یک واریانت ۲v۲ روی صفحه‌ی ۱۶×۸ — هر تیم دو شاه دارد و فقط وقتی می‌بازد که هر دو شاهش مات شوند.</p>
+      <div class="theme-bar" id="themeBar">
+        <span class="theme-label">تم:</span>
+        <button type="button" class="theme-btn" data-theme="midnight">نیمه‌شب</button>
+        <button type="button" class="theme-btn" data-theme="classic">کلاسیک</button>
+        <button type="button" class="theme-btn" data-theme="ivory">عاج</button>
+      </div>
     </header>
     <div class="mode-cards">
       <button class="mode-card" id="cardPlayBot" type="button">
@@ -5015,11 +5088,11 @@ function c1ParseUci(uci){
 
 // Strength presets → Stockfish skill/depth/movetime
 const C1_STRENGTH = {
-  1: { skill: 3, depth: 6, movetime: 200, label: '~1200' },
-  2: { skill: 7, depth: 10, movetime: 400, label: '~1500' },
-  3: { skill: 12, depth: 12, movetime: 700, label: '~1800' },
-  4: { skill: 16, depth: 15, movetime: 1000, label: '~2100' },
-  5: { skill: 20, depth: 18, movetime: 1500, label: '~2500+' },
+  1: { skill: 2, depth: 8,  movetime: 400,  label: '~1100' },
+  2: { skill: 5, depth: 11, movetime: 700,  label: '~1400' },
+  3: { skill: 10, depth: 13, movetime: 1000, label: '~1700' },
+  4: { skill: 14, depth: 16, movetime: 1500, label: '~2000' },
+  5: { skill: 20, depth: 20, movetime: 2500, label: '~2400+' },
 };
 
 let c1SfWorker = null;
@@ -5029,7 +5102,9 @@ let c1SfPending = null;
 function c1InitStockfish(){
   if(c1SfWorker || c1SfReady) return;
   const urls = [
-    './engine/stockfish.js',  // local (upload this folder next to index.html)
+    './stockfish.js',
+    'stockfish.js',
+    './engine/stockfish.js',
     'engine/stockfish.js',
     'https://cdn.jsdelivr.net/npm/stockfish.js@10.0.2/stockfish.js',
     'https://unpkg.com/stockfish.js@10.0.2/stockfish.js',
@@ -5086,24 +5161,43 @@ function c1InitStockfish(){
   tryAll(0);
 }
 
+function c1SfPost(cmd){
+  if(!c1SfWorker) return;
+  try { c1SfWorker.postMessage(cmd); } catch(e){ console.warn(e); }
+}
+
 function c1SfGo(fen, strength, cb){
   c1InitStockfish();
-  if(!c1SfWorker){ cb(null); return; }
   const st = C1_STRENGTH[strength] || C1_STRENGTH[2];
-  c1SfPending = cb;
-  // skill level (Stockfish classic supports Skill Level)
-  c1SfWorker.postMessage('setoption name Skill Level value ' + st.skill);
-  c1SfWorker.postMessage('ucinewgame');
-  c1SfWorker.postMessage('position fen ' + fen);
-  c1SfWorker.postMessage('go depth ' + st.depth + ' movetime ' + st.movetime);
-  // safety timeout
-  setTimeout(()=>{
-    if(c1SfPending === cb){
-      c1SfPending = null;
-      try { c1SfWorker.postMessage('stop'); } catch(_){}
+  let attempts = 0;
+  const start = () => {
+    if(!c1SfWorker){
+      if(attempts++ < 25){ setTimeout(start, 120); return; }
+      console.warn('Stockfish worker missing — fallback');
       cb(null);
+      return;
     }
-  }, st.movetime + 2500);
+    if(!c1SfReady && attempts++ < 40){
+      setTimeout(start, 100);
+      return;
+    }
+    c1SfPending = cb;
+    // Limit strength when available; still search enough depth for real play
+    c1SfPost('setoption name Skill Level value ' + st.skill);
+    c1SfPost('setoption name Contempt value 0');
+    c1SfPost('ucinewgame');
+    c1SfPost('isready');
+    c1SfPost('position fen ' + fen);
+    c1SfPost('go depth ' + st.depth + ' movetime ' + st.movetime);
+    setTimeout(()=>{
+      if(c1SfPending === cb){
+        c1SfPending = null;
+        c1SfPost('stop');
+        cb(null);
+      }
+    }, st.movetime + 4000);
+  };
+  start();
 }
 
 // Fallback minimax (only if Stockfish fails)
@@ -5306,23 +5400,27 @@ function c1MaybeAi(){
   c1InitStockfish();
   const fen = c1ToFen(s1);
   const strength = s1AiDepth;
+  c1Msg(c1SfReady ? 'Stockfish در حال فکر…' : 'در حال لود موتور…', 'info');
   setTimeout(()=>{
     c1SfGo(fen, strength, (uci) => {
       if(uci){
         const parsed = c1ParseUci(uci);
         if(parsed){
-          // validate against legal moves
           const legal = c1LegalMoves(s1, parsed.from.r, parsed.from.c);
-          const ok = legal.find(m => m.r===parsed.to.r && m.c===parsed.to.c &&
-            (!parsed.to.promotionType || m.promotionType===parsed.to.promotionType || !m.promotionType));
+          let ok = legal.find(m => m.r===parsed.to.r && m.c===parsed.to.c &&
+            (!parsed.to.promotionType || m.promotionType===parsed.to.promotionType));
+          if(!ok) ok = legal.find(m => m.r===parsed.to.r && m.c===parsed.to.c);
           if(ok){
-            const mv = { from: parsed.from, to: Object.assign({}, ok, parsed.to.promotionType?{promotionType:parsed.to.promotionType}:{}) };
+            const mv = { from: parsed.from, to: Object.assign({}, ok) };
+            if(parsed.to.promotionType) mv.to.promotionType = parsed.to.promotionType;
             c1ApplyAiMove(mv);
+            c1Msg('Stockfish بازی کرد.', 'success');
             return;
           }
         }
+        console.warn('UCI not matched legal moves', uci);
       }
-      // fallback
+      c1Msg('Stockfish در دسترس نیست — موتور ضعیف جایگزین شد.', 'error');
       const fb = c1BestMoveFallback(s1, 3);
       c1ApplyAiMove(fb);
     });
@@ -5367,6 +5465,28 @@ function c1Undo(){
   c1Msg('حرکت برگشت.', 'info');
   c1Render();
 }
+
+
+/* ---- Theme persistence ---- */
+function applyTheme(name){
+  const allowed = { midnight:1, classic:1, ivory:1 };
+  const t = allowed[name] ? name : 'midnight';
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('chess-theme', t); } catch(_){}
+  document.querySelectorAll('.theme-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.theme === t);
+  });
+}
+(function initTheme(){
+  let saved = 'midnight';
+  try { saved = localStorage.getItem('chess-theme') || 'midnight'; } catch(_){}
+  applyTheme(saved);
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest && e.target.closest('.theme-btn');
+    if(!btn) return;
+    applyTheme(btn.dataset.theme);
+  });
+})();
 
 // wire UI
 (function wire1v1(){
