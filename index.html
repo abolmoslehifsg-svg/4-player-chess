@@ -3793,11 +3793,11 @@ let drag4 = null;
 let suppressNextClick4 = false;
 
 function clearDrag4(){
-  if(drag4 && drag4.ghost && drag4.ghost.parentNode) {
+  if (drag4 && drag4.ghost && drag4.ghost.parentNode) {
     drag4.ghost.parentNode.removeChild(drag4.ghost);
   }
-  document.querySelectorAll('#chessBoard .cell.dragging-source, #chessBoard .cell.drag-over-legal').forEach(el=>{
-    el.classList.remove('dragging-source','drag-over-legal');
+  document.querySelectorAll('#chessBoard .cell.dragging-source, #chessBoard .cell.drag-over-legal').forEach(el => {
+    el.classList.remove('dragging-source', 'drag-over-legal');
   });
   drag4 = null;
 }
@@ -3805,8 +3805,8 @@ function clearDrag4(){
 function cell4FromPoint(x, y){
   const el = document.elementFromPoint(x, y);
   const cell = el && el.closest ? el.closest('#chessBoard .cell') : null;
-  if(!cell) return null;
-  return { r:+cell.dataset.row, c:+cell.dataset.col, el:cell };
+  if (!cell) return null;
+  return { r: +cell.dataset.row, c: +cell.dataset.col, el: cell };
 }
 
 function buildBoardCells() {
@@ -3818,6 +3818,8 @@ function buildBoardCells() {
       if (c === 8) cell.classList.add('col-boundary');
       cell.dataset.row = r;
       cell.dataset.col = c;
+
+      // Two-click moves (primary)
       cell.addEventListener('click', () => {
         if (suppressNextClick4) {
           suppressNextClick4 = false;
@@ -3825,12 +3827,15 @@ function buildBoardCells() {
         }
         handleCellClick(r, c);
       });
+
       cell.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         cell.classList.add('ping-highlight');
         AudioFX.ping();
         setTimeout(() => cell.classList.remove('ping-highlight'), 1500);
       });
+
+      // Drag: only activates after moving ~8px so normal clicks stay intact
       cell.addEventListener('pointerdown', (e) => {
         if (e.button != null && e.button !== 0) return;
         if (state.gameOver || aiThinking || viewIndex !== null) return;
@@ -3838,11 +3843,6 @@ function buildBoardCells() {
         const player = PLAYERS[state.currentPlayerIndex];
         const piece = state.board[r][c];
         if (!piece || piece.player !== player) return;
-        // Do NOT preventDefault / suppress click yet — only after real drag
-        const moves = generateLegalMovesForPiece(state, player, r, c);
-        state.selected = { row: r, col: c };
-        state.legalMovesForSelected = moves;
-        render();
         drag4 = {
           fromR: r, fromC: c, pointerId: e.pointerId,
           startX: e.clientX, startY: e.clientY,
@@ -3850,35 +3850,52 @@ function buildBoardCells() {
         };
         try { cell.setPointerCapture(e.pointerId); } catch (_) {}
       });
+
       cell.addEventListener('pointermove', (e) => {
         if (!drag4 || drag4.pointerId !== e.pointerId) return;
-        const dx = e.clientX - drag4.startX, dy = e.clientY - drag4.startY;
-        if (!drag4.dragged && (dx * dx + dy * dy) < 36) return; // <6px = click
+        const dx = e.clientX - drag4.startX;
+        const dy = e.clientY - drag4.startY;
         if (!drag4.dragged) {
+          if (dx * dx + dy * dy < 64) return; // ~8px threshold
           drag4.dragged = true;
-          suppressNextClick4 = true;
+          // Select piece when drag actually starts
+          const player = PLAYERS[state.currentPlayerIndex];
+          state.selected = { row: drag4.fromR, col: drag4.fromC };
+          state.legalMovesForSelected = generateLegalMovesForPiece(state, player, drag4.fromR, drag4.fromC);
+          render();
           const piece = state.board[drag4.fromR][drag4.fromC];
           const ghost = document.createElement('div');
           ghost.className = 'piece-ghost piece player-' + (piece ? piece.player : 'A');
-          const src = el.board.querySelector('.cell[data-row="' + drag4.fromR + '"][data-col="' + drag4.fromC + '"] .piece');
+          const src = el.board.querySelector(
+            '.cell[data-row="' + drag4.fromR + '"][data-col="' + drag4.fromC + '"] .piece'
+          );
           ghost.textContent = src ? src.textContent : (piece ? PIECE_GLYPH[piece.type] : '');
           ghost.style.left = e.clientX + 'px';
           ghost.style.top = e.clientY + 'px';
           document.body.appendChild(ghost);
           drag4.ghost = ghost;
-          const srcCell = el.board.querySelector('.cell[data-row="' + drag4.fromR + '"][data-col="' + drag4.fromC + '"]');
+          const srcCell = el.board.querySelector(
+            '.cell[data-row="' + drag4.fromR + '"][data-col="' + drag4.fromC + '"]'
+          );
           if (srcCell) srcCell.classList.add('dragging-source');
         }
         if (drag4.ghost) {
           drag4.ghost.style.left = e.clientX + 'px';
           drag4.ghost.style.top = e.clientY + 'px';
         }
-        document.querySelectorAll('#chessBoard .cell.drag-over-legal').forEach(el2 => el2.classList.remove('drag-over-legal'));
+        document.querySelectorAll('#chessBoard .cell.drag-over-legal').forEach(el2 => {
+          el2.classList.remove('drag-over-legal');
+        });
         const hit = cell4FromPoint(e.clientX, e.clientY);
-        if (hit && state.legalMovesForSelected && state.legalMovesForSelected.some(m => m.row === hit.r && m.col === hit.c)) {
+        if (
+          hit &&
+          state.legalMovesForSelected &&
+          state.legalMovesForSelected.some(m => m.row === hit.r && m.col === hit.c)
+        ) {
           hit.el.classList.add('drag-over-legal');
         }
       });
+
       cell.addEventListener('pointerup', (e) => {
         if (!drag4 || drag4.pointerId !== e.pointerId) return;
         const fromR = drag4.fromR, fromC = drag4.fromC;
@@ -3886,18 +3903,26 @@ function buildBoardCells() {
         const hit = cell4FromPoint(e.clientX, e.clientY);
         clearDrag4();
         if (wasDrag) {
+          // Real drag → move if legal; suppress the synthetic click
           suppressNextClick4 = true;
           if (hit && !(hit.r === fromR && hit.c === fromC)) {
             state.selected = { row: fromR, col: fromC };
-            state.legalMovesForSelected = generateLegalMovesForPiece(state, PLAYERS[state.currentPlayerIndex], fromR, fromC);
+            state.legalMovesForSelected = generateLegalMovesForPiece(
+              state, PLAYERS[state.currentPlayerIndex], fromR, fromC
+            );
             handleCellClick(hit.r, hit.c);
           } else {
             render();
           }
         }
-        // if not dragged: leave selection; native click will fire for 2-click move
+        // Not dragged → let the normal click event run (two-click mode)
       });
-      cell.addEventListener('pointercancel', () => { clearDrag4(); suppressNextClick4 = false; });
+
+      cell.addEventListener('pointercancel', () => {
+        clearDrag4();
+        suppressNextClick4 = false;
+      });
+
       el.board.appendChild(cell);
     }
   }
@@ -5922,11 +5947,11 @@ let c1Drag = null;
 let suppressNextClick1 = false;
 
 function c1ClearDrag(){
-  if(c1Drag && c1Drag.ghost && c1Drag.ghost.parentNode) {
+  if (c1Drag && c1Drag.ghost && c1Drag.ghost.parentNode) {
     c1Drag.ghost.parentNode.removeChild(c1Drag.ghost);
   }
-  document.querySelectorAll('#board1v1 .cell.dragging-source, #board1v1 .cell.drag-over-legal').forEach(el=>{
-    el.classList.remove('dragging-source','drag-over-legal');
+  document.querySelectorAll('#board1v1 .cell.dragging-source, #board1v1 .cell.drag-over-legal').forEach(el => {
+    el.classList.remove('dragging-source', 'drag-over-legal');
   });
   c1Drag = null;
 }
@@ -5934,84 +5959,98 @@ function c1ClearDrag(){
 function c1CellFromPoint(x, y){
   const el = document.elementFromPoint(x, y);
   const cell = el && el.closest ? el.closest('#board1v1 .cell') : null;
-  if(!cell) return null;
-  return { r:+cell.dataset.r, c:+cell.dataset.c, el:cell };
+  if (!cell) return null;
+  return { r: +cell.dataset.r, c: +cell.dataset.c, el: cell };
 }
 
 function c1BuildBoard(){
-  if(!el1.board) return;
-  el1.board.innerHTML='';
-  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
-    const cell=document.createElement('div');
-    cell.className='cell ' + (((r+c)%2===0)?'light':'dark');
-    cell.dataset.r=r; cell.dataset.c=c;
-    cell.addEventListener('click', ()=>{
-      if(suppressNextClick1){ suppressNextClick1=false; return; }
-      c1Click(r,c);
+  if (!el1.board) return;
+  el1.board.innerHTML = '';
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell ' + (((r + c) % 2 === 0) ? 'light' : 'dark');
+    cell.dataset.r = r;
+    cell.dataset.c = c;
+
+    cell.addEventListener('click', () => {
+      if (suppressNextClick1) {
+        suppressNextClick1 = false;
+        return;
+      }
+      c1Click(r, c);
     });
+
     cell.addEventListener('pointerdown', (e) => {
-      if(e.button != null && e.button !== 0) return;
-      if(s1.gameOver || s1AiThinking) return;
-      if(!c1IsHumanTurn()) return;
+      if (e.button != null && e.button !== 0) return;
+      if (s1.gameOver || s1AiThinking) return;
+      if (!c1IsHumanTurn()) return;
       const piece = s1.board[r][c];
-      if(!piece || piece.color !== s1.turn) return;
-      s1.selected = {r,c};
-      s1.legal = c1LegalMoves(s1,r,c);
-      c1Render();
+      if (!piece || piece.color !== s1.turn) return;
       c1Drag = {
-        fromR:r, fromC:c, pointerId:e.pointerId,
-        startX:e.clientX, startY:e.clientY,
-        dragged:false, ghost:null
+        fromR: r, fromC: c, pointerId: e.pointerId,
+        startX: e.clientX, startY: e.clientY,
+        dragged: false, ghost: null
       };
-      try { cell.setPointerCapture(e.pointerId); } catch(_){}
+      try { cell.setPointerCapture(e.pointerId); } catch (_) {}
     });
+
     cell.addEventListener('pointermove', (e) => {
-      if(!c1Drag || c1Drag.pointerId !== e.pointerId) return;
-      const dx = e.clientX - c1Drag.startX, dy = e.clientY - c1Drag.startY;
-      if(!c1Drag.dragged && (dx*dx + dy*dy) < 36) return;
-      if(!c1Drag.dragged){
+      if (!c1Drag || c1Drag.pointerId !== e.pointerId) return;
+      const dx = e.clientX - c1Drag.startX;
+      const dy = e.clientY - c1Drag.startY;
+      if (!c1Drag.dragged) {
+        if (dx * dx + dy * dy < 64) return;
         c1Drag.dragged = true;
-        suppressNextClick1 = true;
+        s1.selected = { r: c1Drag.fromR, c: c1Drag.fromC };
+        s1.legal = c1LegalMoves(s1, c1Drag.fromR, c1Drag.fromC);
+        c1Render();
         const piece = s1.board[c1Drag.fromR][c1Drag.fromC];
         const ghost = document.createElement('div');
-        ghost.className = 'piece-ghost piece-1v1 ' + (piece.color==='w'?'white':'black');
+        ghost.className = 'piece-ghost piece-1v1 ' + (piece.color === 'w' ? 'white' : 'black');
         ghost.textContent = C1.GLYPH[piece.color][piece.type];
         ghost.style.left = e.clientX + 'px';
         ghost.style.top = e.clientY + 'px';
         document.body.appendChild(ghost);
         c1Drag.ghost = ghost;
         const src = c1Cell(c1Drag.fromR, c1Drag.fromC);
-        if(src) src.classList.add('dragging-source');
+        if (src) src.classList.add('dragging-source');
       }
-      if(c1Drag.ghost){
+      if (c1Drag.ghost) {
         c1Drag.ghost.style.left = e.clientX + 'px';
         c1Drag.ghost.style.top = e.clientY + 'px';
       }
-      document.querySelectorAll('#board1v1 .cell.drag-over-legal').forEach(el=>el.classList.remove('drag-over-legal'));
+      document.querySelectorAll('#board1v1 .cell.drag-over-legal').forEach(el => {
+        el.classList.remove('drag-over-legal');
+      });
       const hit = c1CellFromPoint(e.clientX, e.clientY);
-      if(hit && s1.legal && s1.legal.some(m => m.r===hit.r && m.c===hit.c)){
+      if (hit && s1.legal && s1.legal.some(m => m.r === hit.r && m.c === hit.c)) {
         hit.el.classList.add('drag-over-legal');
       }
     });
+
     cell.addEventListener('pointerup', (e) => {
-      if(!c1Drag || c1Drag.pointerId !== e.pointerId) return;
+      if (!c1Drag || c1Drag.pointerId !== e.pointerId) return;
       const fromR = c1Drag.fromR, fromC = c1Drag.fromC;
       const wasDrag = c1Drag.dragged;
       const hit = c1CellFromPoint(e.clientX, e.clientY);
       c1ClearDrag();
-      if(wasDrag){
+      if (wasDrag) {
         suppressNextClick1 = true;
-        if(hit && !(hit.r===fromR && hit.c===fromC)){
-          s1.selected = {r:fromR, c:fromC};
+        if (hit && !(hit.r === fromR && hit.c === fromC)) {
+          s1.selected = { r: fromR, c: fromC };
           s1.legal = c1LegalMoves(s1, fromR, fromC);
           c1Click(hit.r, hit.c);
         } else {
           c1Render();
         }
       }
-      // no drag → native click handles 2-click moves
     });
-    cell.addEventListener('pointercancel', () => { c1ClearDrag(); suppressNextClick1 = false; });
+
+    cell.addEventListener('pointercancel', () => {
+      c1ClearDrag();
+      suppressNextClick1 = false;
+    });
+
     el1.board.appendChild(cell);
   }
   c1BuildCoordLabels();
