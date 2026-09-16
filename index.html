@@ -1046,9 +1046,132 @@
     padding:5px 8px; border-bottom:1px dashed var(--panel-border);
     display:flex; justify-content:space-between; gap:8px;
   }
-  .analysis-moves li .ev{ color:var(--gold); min-width:56px; text-align:right; }
+  .analysis-moves li .ev{ color:var(--gold); min-width:56px; text-align:right; transition: color .25s ease; }
   .analysis-moves li.bad .ev{ color:var(--danger); }
   .analysis-moves li.good .ev{ color:var(--ok); }
+  .analysis-moves li{
+    transition: background .2s ease, opacity .25s ease;
+    opacity: 0.55;
+  }
+  .analysis-moves li.analyzed{ opacity: 1; }
+  .analysis-moves li.active-move{
+    background: rgba(207,167,88,.12);
+    border-radius: 6px;
+  }
+  .analysis-body{
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: stretch;
+    direction: ltr;
+  }
+  .analysis-main{ flex: 1; min-width: 0; direction: rtl; }
+  .eval-bar-wrap{
+    flex: 0 0 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    direction: ltr !important;
+    margin: 0;
+  }
+  .eval-bar-labels-v{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    font-size: 10px;
+    color: var(--text-muted);
+    gap: 6px;
+  }
+  .eval-bar-labels-v .eval-score{
+    font-weight: 700;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    writing-mode: horizontal-tb;
+  }
+  .eval-bar{
+    width: 22px;
+    flex: 1;
+    min-height: 180px;
+    border-radius: 11px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse; /* bottom = you */
+    background: #0d0d0d;
+    border: 1px solid var(--panel-border);
+    position: relative;
+  }
+  .eval-bar-you{
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(0deg, #f0ebe3, #cfc7bb);
+    transition: height .4s cubic-bezier(.22,.61,.36,1);
+  }
+  .eval-bar-opp{
+    width: 100%;
+    flex: 1;
+    background: linear-gradient(0deg, #1a1a1a, #333);
+  }
+  .eval-bar-center{
+    position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+    background: rgba(207,167,88,.45); pointer-events: none; z-index: 1;
+  }
+  .gm-mode-list{ display: flex; flex-direction: column; gap: 8px; }
+  .gm-mode-item{
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+    padding: 12px 14px; border-radius: 10px;
+    border: 1px solid var(--panel-border); background: var(--panel);
+    cursor: pointer;
+  }
+  .gm-mode-item:has(input:checked){
+    border-color: var(--gold-dim);
+    box-shadow: 0 0 0 1px var(--gold-dim);
+  }
+  .gm-mode-item.disabled{ opacity: .45; cursor: not-allowed; }
+  .gm-mode-title{ font-weight: 700; color: var(--text); }
+  .gm-mode-desc{ width: 100%; font-size: 12px; color: var(--text-muted); }
+  .analysis-nav{
+    display:flex; gap:8px; align-items:center; justify-content:center;
+    margin: 10px 0 6px; direction: ltr;
+  }
+  .analysis-nav button{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    min-width: 44px;
+  }
+  .analysis-nav button:hover{ border-color: var(--gold-dim); color: var(--gold); }
+  .analysis-nav button:disabled{ opacity: .35; cursor: not-allowed; }
+  .analysis-nav .move-pos{
+    font-size: 12.5px; color: var(--text-muted); min-width: 90px; text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .analysis-status-dot{
+    display:inline-block; width:8px; height:8px; border-radius:50%;
+    background: var(--gold-dim); margin-inline-end:6px; vertical-align:middle;
+  }
+  .analysis-status-dot.busy{ background: var(--gold); animation: pulse 1.2s infinite; }
+  .analysis-status-dot.done{ background: var(--ok); }
+  .analysis-progress{
+    height: 3px;
+    background: var(--panel-border);
+    border-radius: 2px;
+    margin: 8px 0 4px;
+    overflow: hidden;
+  }
+  .analysis-progress > span{
+    display:block; height:100%; width:0%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    transition: width .35s ease;
+  }
   .analysis-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
   .analysis-actions button{
     flex:1; min-width:120px;
@@ -1072,10 +1195,22 @@
     cursor:pointer; font-size:11.5px; font-family:inherit;
   }
   .promo-1v1-overlay{
-    position:fixed; inset:0; z-index:5100;
-    background:rgba(0,0,0,.55);
+    position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,.65);
     display:flex; align-items:center; justify-content:center;
   }
+  .promo-1v1-modal{
+    background:var(--panel); border:1px solid var(--panel-border);
+    border-radius:14px; padding:18px; min-width:260px; text-align:center;
+  }
+  .promo-1v1-modal h3{ margin:0 0 12px; color:var(--gold); }
+  .promo-1v1-options{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .promo-1v1-options button{
+    background:#232732; border:1px solid var(--panel-border); border-radius:10px;
+    color:var(--text); font-size:28px; padding:12px 14px; cursor:pointer; min-width:64px;
+  }
+  .promo-1v1-options button:hover{ border-color:var(--gold); }
+
   .promo-1v1-modal{
     background:var(--panel); border:1px solid var(--panel-border);
     border-radius:12px; padding:18px; text-align:center;
@@ -1114,6 +1249,140 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
     grid-template-rows: repeat(8, minmax(36px, 64px));
   }
 
+
+  .bot-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap:12px;
+    margin-top:8px;
+  }
+  .bot-card{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:14px;
+    padding:16px 12px;
+    text-align:center;
+    cursor:pointer;
+    color:var(--text);
+    font-family:inherit;
+    transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .bot-card:hover{
+    transform:translateY(-2px);
+    border-color:var(--gold-dim);
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
+  }
+  .bot-card .bot-avatar{ font-size:36px; margin-bottom:8px; line-height:1; }
+  .bot-card .bot-name{ font-weight:700; font-size:14px; margin-bottom:4px; }
+  .bot-card .bot-rating{ font-size:11px; color:var(--gold); font-weight:600; margin-bottom:6px; }
+  .bot-card .bot-style{ font-size:11.5px; color:var(--text-muted); line-height:1.5; }
+  .bot-card .bot-tag{
+    display:inline-block; margin-top:8px; font-size:10px; font-weight:700;
+    padding:2px 8px; border-radius:10px;
+    background:rgba(207,167,88,.12); color:var(--gold);
+  }
+
+
+  /* Premove — high visibility */
+  .chess-board .cell, .chess-board-1v1 .cell{
+    position: relative;
+  }
+  .cell.premove-from{
+    box-shadow: inset 0 0 0 4px #3b82f6 !important;
+    background: rgba(59, 130, 246, .40) !important;
+  }
+  .cell.premove-to{
+    box-shadow: inset 0 0 0 4px #60a5fa !important;
+    background: rgba(59, 130, 246, .28) !important;
+  }
+  .cell.premove-legal::after{
+    content:"";
+    position:absolute;
+    left:50%; top:50%;
+    width:28%; height:28%;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    background:#3b82f6;
+    opacity:.65;
+    pointer-events:none;
+    z-index:2;
+  }
+  .cell.premove-legal-capture{
+    box-shadow: inset 0 0 0 4px #3b82f6 !important;
+  }
+  .cell.premove-legal-capture::after{
+    content:"";
+    position:absolute;
+    inset:6%;
+    border:3px solid #3b82f6;
+    border-radius:4px;
+    pointer-events:none;
+    z-index:2;
+  }
+  .premove-banner{
+    font-size:12.5px;
+    color:#93c5fd;
+    min-height:18px;
+    text-align:center;
+    font-weight:700;
+    margin-top:4px;
+  }
+  .piece, .piece-1v1{ pointer-events: none; }
+  .premove-ghost{
+    position: absolute !important;
+    inset: 8% !important;
+    opacity: 0.42 !important;
+    filter: drop-shadow(0 0 4px #3b82f6);
+    z-index: 3;
+  }
+
+  .player-badge.turn{
+    border-color:var(--gold);
+    box-shadow:0 0 0 2px var(--gold-dim), 0 0 12px rgba(207,167,88,.15);
+  }
+  .king-status.check{
+    animation: pulse 1.2s infinite;
+  }
+  .cell.in-check-4p{
+    box-shadow: inset 0 0 0 3px #d1495b !important;
+    background:#5a3038 !important;
+  }
+  .cell.piece-just-moved .piece{
+    animation: piecePop .18s ease;
+  }
+  @keyframes piecePop{
+    from{ transform: scale(.86); opacity:.7; }
+    to{ transform: scale(1); opacity:1; }
+  }
+
+
+  .analysis-board-wrap{ margin: 10px 0 12px; direction: ltr; }
+  .analysis-mini-board{
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    width: min(280px, 100%);
+    aspect-ratio: 1;
+    margin: 0 auto;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .analysis-mini-board .msq{
+    display:flex; align-items:center; justify-content:center;
+    font-size: clamp(12px, 3.2vw, 20px);
+    user-select:none;
+  }
+  .analysis-mini-board .msq.l{ background: var(--sq-light); }
+  .analysis-mini-board .msq.d{ background: var(--sq-dark); }
+  .analysis-mini-board .msq.last{ outline: 2px solid var(--gold); outline-offset: -2px; }
+  .analysis-eval-note{
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.5;
+  }
+
 </style>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
@@ -1121,8 +1390,8 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
 <div id="homeView" class="view">
   <div class="home-wrap">
     <header class="home-header">
-      <h1>شطرنج ۴ نفره</h1>
-      <p>یک واریانت ۲v۲ روی صفحه‌ی ۱۶×۸ — هر تیم دو شاه دارد و فقط وقتی می‌بازد که هر دو شاهش مات شوند.</p>
+      <h1>شطرنج</h1>
+      <p>۱v۱ · ۴ نفره · آنلاین · ربات‌ها</p>
       <div class="theme-bar" id="themeBar">
         <span class="theme-label">تم:</span>
         <button type="button" class="theme-btn" data-theme="midnight">نیمه‌شب</button>
@@ -1132,35 +1401,126 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
     </header>
     <div class="mode-cards">
       <button class="mode-card" id="cardPlayBot" type="button">
-        <div class="mode-card-icon">🤖</div>
-        <div class="mode-card-title">بازی با ربات</div>
-        <div class="mode-card-desc">در برابر هوش مصنوعی بازی کنید، یا هر ترکیبی از انسان و ربات را برای هر ۴ بازیکن تنظیم کنید.</div>
+        <div class="mode-card-icon">♟️</div>
+        <div class="mode-card-title">شطرنج ۴ نفره</div>
+        <div class="mode-card-desc">واریانت ۲v۲ روی ۱۶×۸ — انسان یا AI برای هر بازیکن.</div>
       </button>
       <button class="mode-card" id="cardPlay1v1" type="button">
-        <div class="mode-card-icon">♟️</div>
+        <div class="mode-card-icon">♞</div>
         <div class="mode-card-title">شطرنج ۱v۱</div>
-        <div class="mode-card-desc">شطرنج کلاسیک ۸×۸ — انسان در برابر انسان یا ربات، با قوانین استاندارد.</div>
+        <div class="mode-card-desc">شطرنج کلاسیک ۸×۸.</div>
       </button>
       <button class="mode-card" id="cardPlayOnline" type="button">
         <div class="mode-card-icon">🌐</div>
         <div class="mode-card-title">بازی آنلاین</div>
-        <div class="mode-card-desc">اتاق بسازید و در تب دوم (یا دستگاه دیگر) با کد بپیوندید — همین الان قابل بازی.</div>
+        <div class="mode-card-desc">اتاق بساز و با کد بپیوند.</div>
       </button>
-      <button class="mode-card disabled" id="cardDailyPuzzle" type="button" disabled>
-        <div class="mode-card-icon">🧩</div>
-        <div class="mode-card-title">معمای روزانه</div>
-        <div class="mode-card-desc">به‌زودی — یک معمای تاکتیکی تازه هر روز.</div>
-        <div class="mode-card-badge">به‌زودی</div>
+      <button class="mode-card" id="cardPlayBotsHub" type="button">
+        <div class="mode-card-icon">🤖</div>
+        <div class="mode-card-title">بازی با ربات‌ها</div>
+        <div class="mode-card-desc">انتخاب ربات و شروع بازی در برابر AI.</div>
+      </button>
+      <button class="mode-card" id="cardGameModes" type="button">
+        <div class="mode-card-icon">⚙️</div>
+        <div class="mode-card-title">گیم‌مودها</div>
+        <div class="mode-card-desc">۱v۱ یا ۲v۲ + انتخاب مود و ادآن قبل از بازی.</div>
+      </button>
+      <button class="mode-card disabled" id="cardVariants" type="button" disabled>
+        <div class="mode-card-icon">✨</div>
+        <div class="mode-card-title">واریانت‌ها</div>
+        <div class="mode-card-desc">در دست تولید.</div>
+        <div class="mode-card-badge">در دست تولید</div>
       </button>
     </div>
   </div>
 </div>
 
 
+
+<div id="botsHubView" class="view" style="display:none">
+  <div class="setup-wrap" style="max-width:720px">
+    <button class="back-btn" id="backFromBotsHubBtn" type="button">→ بازگشت</button>
+    <h2 class="setup-title">بازی با ربات‌ها</h2>
+    <p class="setup-note">یک حریف انتخاب کن. هر ربات سطح و سبک خودش را دارد.</p>
+
+    <div class="setup-section">
+      <h3>رنگ شما</h3>
+      <div class="segmented segmented-wide" id="botColorPicker">
+        <button class="seg-btn active" data-color="w" type="button">سفید</button>
+        <button class="seg-btn" data-color="b" type="button">سیاه</button>
+      </div>
+    </div>
+
+    <div class="bot-grid" id="botGrid"></div>
+
+    <div class="setup-section" style="margin-top:18px">
+      <h3>سایر</h3>
+      <div class="mode-cards">
+        <button class="mode-card" id="botsHub4p" type="button">
+          <div class="mode-card-icon">♟️</div>
+          <div class="mode-card-title">۴ نفره با ربات</div>
+          <div class="mode-card-desc">تنظیم Human/AI برای هر بازیکن.</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="gameModesView" class="view" style="display:none">
+  <div class="setup-wrap">
+    <button class="back-btn" id="backFromGameModesBtn" type="button">→ بازگشت</button>
+    <h2 class="setup-title">گیم‌مودها</h2>
+    <p class="setup-note">قبل از بازی، قالب و مود را انتخاب کنید. ادآن‌ها به‌زودی اینجا اضافه می‌شوند.</p>
+
+    <div class="setup-section">
+      <h3>قالب بازی</h3>
+      <div class="segmented segmented-wide" id="gmFormatPicker">
+        <button class="seg-btn active" data-format="1v1" type="button">۱ به ۱</button>
+        <button class="seg-btn" data-format="2v2" type="button">۲ به ۲</button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <h3>مود فعال</h3>
+      <div class="gm-mode-list" id="gmModeList">
+        <label class="gm-mode-item">
+          <input type="radio" name="gmMode" value="standard" checked>
+          <span class="gm-mode-title">استاندارد</span>
+          <span class="gm-mode-desc">قوانین پایه بدون ادآن</span>
+        </label>
+        <label class="gm-mode-item disabled">
+          <input type="radio" name="gmMode" value="guardian" disabled>
+          <span class="gm-mode-title">Guardian</span>
+          <span class="gm-mode-desc">فقط در ۲v۲ — به‌زودی از این منو</span>
+        </label>
+        <label class="gm-mode-item disabled">
+          <input type="radio" name="gmMode" value="addon-pack" disabled>
+          <span class="gm-mode-title">ادآن‌پک</span>
+          <span class="gm-mode-desc">در دست تولید</span>
+        </label>
+      </div>
+    </div>
+
+    <button class="start-btn" id="gmContinueBtn" type="button">ادامه و شروع تنظیمات</button>
+  </div>
+</div>
+
+<div id="variantsView" class="view" style="display:none">
+  <div class="setup-wrap">
+    <button class="back-btn" id="backFromVariantsBtn" type="button">→ بازگشت</button>
+    <h2 class="setup-title">واریانت‌ها</h2>
+    <div class="panel-box" style="text-align:center;padding:28px 16px;">
+      <div style="font-size:40px;margin-bottom:12px;">✨</div>
+      <p style="color:var(--text);font-weight:600;margin-bottom:8px;">در دست تولید</p>
+      <p class="setup-note">واریانت‌های جدید اینجا اضافه می‌شوند.</p>
+    </div>
+  </div>
+</div>
+
 <div id="setup1v1View" class="view" style="display:none">
   <div class="setup-wrap">
     <button class="back-btn" id="backFrom1v1SetupBtn" type="button">→ بازگشت</button>
-    <h2 class="setup-title">شطرنج ۱v۱ کلاسیک</h2>
+    <h2 class="setup-title">شطرنج ۱v۱</h2>
 
     <div class="setup-section">
       <h3>حالت بازی</h3>
@@ -1171,14 +1531,14 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
     </div>
 
     <div class="setup-section" id="color1v1Section">
-      <h3>رنگ شما (در برابر ربات)</h3>
+      <h3>رنگ شما</h3>
       <div class="segmented segmented-wide" id="color1v1Picker">
         <button class="seg-btn active" data-color="w" type="button">سفید</button>
         <button class="seg-btn" data-color="b" type="button">سیاه</button>
       </div>
     </div>
 
-    <div class="setup-section">
+    <div class="setup-section" id="ai1v1Section">
       <h3>سطح ربات</h3>
       <select class="ai-select" id="ai1v1Depth">
         <option value="1">آسان (~1200)</option>
@@ -1196,8 +1556,7 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
 <div class="app view" id="game1v1View" style="display:none">
   <button class="back-btn back-btn-ingame" id="backFrom1v1GameBtn" type="button">→ بازگشت به منو</button>
   <header class="top">
-    <h1>شطرنج ۱v۱ — کلاسیک</h1>
-    <p>قوانین استاندارد فیده · قلعه · en passant · ارتقا · کیش و مات</p>
+    <h1 id="title1v1">شطرنج ۱v۱</h1>
   </header>
   <div class="layout">
     <div class="center-col">
@@ -1244,7 +1603,37 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
   <div class="analysis-modal">
     <h3 id="analysisTitle">آنالیز بازی</h3>
     <div class="analysis-sub" id="analysisSub"></div>
-    <ol class="analysis-moves" id="analysisMoves"></ol>
+    <div class="analysis-body">
+      <div class="analysis-main">
+        <div class="analysis-nav">
+          <button type="button" id="analysisPrevBtn" title="حرکت قبلی">◀</button>
+          <span class="move-pos" id="analysisMovePos">شروع</span>
+          <button type="button" id="analysisNextBtn" title="حرکت بعدی">▶</button>
+        </div>
+        <div class="analysis-board-wrap">
+          <div class="analysis-mini-board" id="analysisMiniBoard"></div>
+          <div class="analysis-eval-note" id="analysisEvalNote"></div>
+        </div>
+        <div class="analysis-progress"><span id="analysisProgressFill"></span></div>
+        <p class="analysis-sub" id="analysisEngineStatus" style="margin:4px 0 8px;font-size:11px;">
+          <span class="analysis-status-dot" id="analysisStatusDot"></span>
+          <span id="analysisStatusText">آماده</span>
+        </p>
+        <ol class="analysis-moves" id="analysisMoves"></ol>
+      </div>
+      <div class="eval-bar-wrap">
+        <div class="eval-bar-labels-v">
+          <span id="evalLabelTop">حریف</span>
+          <span class="eval-score" id="evalScoreLabel">0.00</span>
+          <span id="evalLabelBottom">شما</span>
+        </div>
+        <div class="eval-bar" id="evalBar">
+          <div class="eval-bar-you" id="evalBarYou"></div>
+          <div class="eval-bar-opp" id="evalBarOpp"></div>
+          <div class="eval-bar-center"></div>
+        </div>
+      </div>
+    </div>
     <div class="analysis-actions">
       <button type="button" class="primary" id="analysisRunBtn">شروع آنالیز Stockfish</button>
       <button type="button" id="analysisCloseBtn">بستن</button>
@@ -1257,7 +1646,7 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
 <div id="botSetupView" class="view" style="display:none">
   <div class="setup-wrap">
     <button class="back-btn" id="backFromSetupBtn" type="button">→ بازگشت</button>
-    <h2 class="setup-title">بازی با ربات</h2>
+    <h2 class="setup-title">شطرنج ۴ نفره</h2>
 
     <div class="setup-section">
       <h3>کنترل هر بازیکن</h3>
@@ -1445,6 +1834,7 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
         <div class="turn-indicator" id="turnIndicator">CURRENT TURN: Player A</div>
         <div class="turn-timer" id="turnTimer"></div>
         <div class="message-bar info" id="messageBar"></div>
+        <div class="premove-banner" id="premoveBanner"></div>
         <div class="game-over-banner" id="gameOverBanner"></div>
         <div class="view-banner" id="viewBanner">
           <span id="viewBannerText"></span>
@@ -1562,8 +1952,34 @@ function createInitialKings() {
   };
 }
 
+function posKey4(state){
+  const parts = [String(state.currentPlayerIndex)];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const p = state.board[r][c];
+      if (p) parts.push(r + ',' + c + p.type + p.player);
+    }
+  }
+  for (const pl of PLAYERS) {
+    const k = state.kings[pl];
+    parts.push(pl + (k.status || '') + (k.status === 'checkmated' ? 'X' : (k.row + ',' + k.col)));
+  }
+  // ep targets matter for legal moves
+  if (state.epTargets && state.epTargets.length) {
+    for (const ep of state.epTargets) {
+      parts.push('ep' + ep.captureRow + ',' + ep.captureCol + ep.team);
+    }
+  }
+  return parts.join('|');
+}
+function countRep4(state, key){
+  let n = 0;
+  const arr = state.posKeys || [];
+  for (let i = 0; i < arr.length; i++) if (arr[i] === key) n++;
+  return n;
+}
 function createInitialState() {
-  return {
+  const s = {
     board: createInitialBoard(),
     kings: createInitialKings(),
     currentPlayerIndex: 0,
@@ -1575,7 +1991,10 @@ function createInitialState() {
     winnerTeam: null,
     selected: null,
     legalMovesForSelected: [],
+    posKeys: [],
   };
+  s.posKeys.push(posKey4(s));
+  return s;
 }
 
 function cloneState(state) {
@@ -1951,7 +2370,19 @@ function makeMove(state, from, to, promotionType) {
   refreshAllKingDisplays(state);
 
   const turnResult = advanceTurn(state);
-  return { ok: true, gameOver: turnResult === 'gameover' };
+  if (turnResult === 'gameover') {
+    return { ok: true, gameOver: true };
+  }
+  if (!state.posKeys) state.posKeys = [];
+  const key = posKey4(state);
+  state.posKeys.push(key);
+  if (countRep4(state, key) >= 3) {
+    state.gameOver = true;
+    state.winnerTeam = null;
+    state.log.push('Draw by threefold repetition.');
+    return { ok: true, gameOver: true };
+  }
+  return { ok: true, gameOver: false };
 }
 
 /* ==========================================================================
@@ -2658,8 +3089,34 @@ function createInitialKings() {
   };
 }
 
+function posKey4(state){
+  const parts = [String(state.currentPlayerIndex)];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const p = state.board[r][c];
+      if (p) parts.push(r + ',' + c + p.type + p.player);
+    }
+  }
+  for (const pl of PLAYERS) {
+    const k = state.kings[pl];
+    parts.push(pl + (k.status || '') + (k.status === 'checkmated' ? 'X' : (k.row + ',' + k.col)));
+  }
+  // ep targets matter for legal moves
+  if (state.epTargets && state.epTargets.length) {
+    for (const ep of state.epTargets) {
+      parts.push('ep' + ep.captureRow + ',' + ep.captureCol + ep.team);
+    }
+  }
+  return parts.join('|');
+}
+function countRep4(state, key){
+  let n = 0;
+  const arr = state.posKeys || [];
+  for (let i = 0; i < arr.length; i++) if (arr[i] === key) n++;
+  return n;
+}
 function createInitialState() {
-  return {
+  const s = {
     board: createInitialBoard(),
     kings: createInitialKings(),
     currentPlayerIndex: 0,
@@ -2671,7 +3128,10 @@ function createInitialState() {
     winnerTeam: null,
     selected: null,
     legalMovesForSelected: [],
+    posKeys: [],
   };
+  s.posKeys.push(posKey4(s));
+  return s;
 }
 
 function cloneState(state) {
@@ -3047,7 +3507,19 @@ function makeMove(state, from, to, promotionType) {
   refreshAllKingDisplays(state);
 
   const turnResult = advanceTurn(state);
-  return { ok: true, gameOver: turnResult === 'gameover' };
+  if (turnResult === 'gameover') {
+    return { ok: true, gameOver: true };
+  }
+  if (!state.posKeys) state.posKeys = [];
+  const key = posKey4(state);
+  state.posKeys.push(key);
+  if (countRep4(state, key) >= 3) {
+    state.gameOver = true;
+    state.winnerTeam = null;
+    state.log.push('Draw by threefold repetition.');
+    return { ok: true, gameOver: true };
+  }
+  return { ok: true, gameOver: false };
 }
 
 /* ==========================================================================
@@ -3682,7 +4154,13 @@ function findBestMove(s, depth) {
 
 const PIECE_GLYPH = { K: '♚', Q: '♛', R: '♜', B: '♝', N: '♞', P: '♟' };
 
+
+// Premove storage (declared early so clearAllPremoves is safe at init)
+var premoves = { A: [], B: [], C: [], D: [] };
+var premoveDraft = null;
+
 let state = createInitialState();
+  if (typeof clearAllPremoves === 'function') clearAllPremoves();
 refreshAllKingDisplays(state);
 let undoStack = [];
 // Full position snapshots for the history viewer: index 0 = start position,
@@ -3819,7 +4297,6 @@ function buildBoardCells() {
       cell.dataset.row = r;
       cell.dataset.col = c;
 
-      // Two-click moves (primary)
       cell.addEventListener('click', () => {
         if (suppressNextClick4) {
           suppressNextClick4 = false;
@@ -3835,7 +4312,7 @@ function buildBoardCells() {
         setTimeout(() => cell.classList.remove('ping-highlight'), 1500);
       });
 
-      // Drag: only activates after moving ~8px so normal clicks stay intact
+      // Drag support — activates only after ~8px movement so clicks stay clean
       cell.addEventListener('pointerdown', (e) => {
         if (e.button != null && e.button !== 0) return;
         if (state.gameOver || aiThinking || viewIndex !== null) return;
@@ -3856,9 +4333,8 @@ function buildBoardCells() {
         const dx = e.clientX - drag4.startX;
         const dy = e.clientY - drag4.startY;
         if (!drag4.dragged) {
-          if (dx * dx + dy * dy < 64) return; // ~8px threshold
+          if (dx * dx + dy * dy < 64) return;
           drag4.dragged = true;
-          // Select piece when drag actually starts
           const player = PLAYERS[state.currentPlayerIndex];
           state.selected = { row: drag4.fromR, col: drag4.fromC };
           state.legalMovesForSelected = generateLegalMovesForPiece(state, player, drag4.fromR, drag4.fromC);
@@ -3903,7 +4379,6 @@ function buildBoardCells() {
         const hit = cell4FromPoint(e.clientX, e.clientY);
         clearDrag4();
         if (wasDrag) {
-          // Real drag → move if legal; suppress the synthetic click
           suppressNextClick4 = true;
           if (hit && !(hit.r === fromR && hit.c === fromC)) {
             state.selected = { row: fromR, col: fromC };
@@ -3915,7 +4390,7 @@ function buildBoardCells() {
             render();
           }
         }
-        // Not dragged → let the normal click event run (two-click mode)
+        // pure click: leave selection to the click handler
       });
 
       cell.addEventListener('pointercancel', () => {
@@ -3941,7 +4416,7 @@ function render() {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const cellNode = cellEl(r, c);
-      cellNode.classList.remove('selected', 'legal-move', 'legal-capture', 'last-move');
+      cellNode.classList.remove('selected', 'legal-move', 'legal-capture', 'last-move', 'premove-from', 'premove-to', 'premove-legal', 'premove-legal-capture', 'in-check-4p');
       cellNode.innerHTML = '';
 
       const piece = ds.board[r][c];
@@ -3978,12 +4453,78 @@ function render() {
     }
   }
 
+  // Premove draft (selecting) + committed premoves
+  if (!isViewing && typeof premoveDraft !== 'undefined' && premoveDraft) {
+    cellEl(premoveDraft.from.row, premoveDraft.from.col).classList.add('premove-from');
+    for (const mv of premoveDraft.legal) {
+      const c = cellEl(mv.row, mv.col);
+      const occupied = !!state.board[mv.row][mv.col] || mv.enPassant;
+      c.classList.add(occupied ? 'premove-legal-capture' : 'premove-legal');
+    }
+  }
+  if (!isViewing && typeof premoves !== 'undefined') {
+    for (const p of PLAYERS) {
+      const list = premoves[p];
+      if (!list || !list.length) continue;
+      for (let i = 0; i < list.length; i++) {
+        const pm = list[i];
+        try {
+          cellEl(pm.from.row, pm.from.col).classList.add('premove-from');
+          const dest = cellEl(pm.to.row, pm.to.col);
+          dest.classList.add('premove-to');
+          // Ghost piece preview on destination
+          const fromPiece = state.board[pm.from.row] && state.board[pm.from.row][pm.from.col];
+          if (fromPiece && !dest.querySelector('.premove-ghost')) {
+            const g = document.createElement('span');
+            g.className = 'piece premove-ghost player-' + fromPiece.player;
+            g.textContent = PIECE_GLYPH[fromPiece.type];
+            g.style.opacity = '0.45';
+            g.style.pointerEvents = 'none';
+            dest.appendChild(g);
+          }
+        } catch (_) {}
+      }
+    }
+  }
+
+  // Check highlight for living kings in check
+  if (!isViewing) {
+    for (const p of PLAYERS) {
+      const k = ds.kings[p];
+      if (k && k.status === 'check' && typeof k.row === 'number') {
+        try { cellEl(k.row, k.col).classList.add('in-check-4p'); } catch (_) {}
+      }
+    }
+  }
+
   // turn indicator
   const currentPlayer = PLAYERS[ds.currentPlayerIndex];
   const currentRole = ds.kings[currentPlayer].status === 'checkmated' ? 'GUARDIAN' : 'NORMAL';
   el.turnIndicator.textContent = isViewing
-    ? `VIEWING move ${viewIndex} of ${state.moveHistory.length}`
-    : `CURRENT TURN: Player ${currentPlayer} · ${currentRole}`;
+    ? `مشاهده حرکت ${viewIndex} / ${state.moveHistory.length}`
+    : `نوبت: Player ${currentPlayer}` + (currentRole === 'GUARDIAN' ? ' · Guardian' : '') + (aiThinking ? ' · AI…' : '');
+
+  // Premove status banner
+  const pmEl = document.getElementById('premoveBanner');
+  if (pmEl) {
+    if (isViewing) pmEl.textContent = '';
+    else {
+      let t = '';
+      if (typeof premoveDraft !== 'undefined' && premoveDraft) {
+        t = 'Premove: مقصد آبی را انتخاب کنید (Player ' + premoveDraft.player + ')';
+      } else if (typeof premoves !== 'undefined') {
+        const ps = PLAYERS.filter(p => premoves[p] && premoves[p].length);
+        if (ps.length) t = 'Premove: ' + ps.map(p => p + '×' + premoves[p].length).join(' · ') + ' | لغو: کلیک روی مبدأ';
+        else {
+          const cur = PLAYERS[ds.currentPlayerIndex];
+          const anyHumanWaiting = PLAYERS.some(p => PLAYER_MODE[p]==='human' && p !== cur);
+          if (anyHumanWaiting || PLAYER_MODE[cur]==='ai')
+            t = 'Premove: وقتی نوبت شما نیست → مهره خودتان → مقصد (آبی)';
+        }
+      }
+      pmEl.textContent = t;
+    }
+  }
 
   // player badges (turn highlight + king status + control mode)
   for (const p of PLAYERS) {
@@ -4066,6 +4607,204 @@ function render() {
   syncTurnTimer();
 }
 
+
+// ===== Premove (intent only; never mutates board until real turn) =====
+// premoves / premoveDraft declared near top of script
+
+function isLocalHumanSeat(player) {
+  if (PLAYER_MODE[player] !== 'human') return false;
+  if (ONLINE.role === 'guest' && ONLINE.ready) return player === ONLINE.mySeat;
+  if (ONLINE.role === 'host' && ONLINE.ready) {
+    const seat = ONLINE.seats[player];
+    // host controls local seats; remote human seats are not local
+    return !seat || seat === 'local';
+  }
+  return true;
+}
+
+function clearPremove(player) {
+  if (typeof premoves === 'undefined' || !premoves) return;
+  if (player) premoves[player] = [];
+  else {
+    for (const p of PLAYERS) premoves[p] = [];
+  }
+  if (premoveDraft && (!player || premoveDraft.player === player)) premoveDraft = null;
+}
+
+function clearAllPremoves() {
+  if (typeof premoves === 'undefined' || !premoves) return;
+  for (const p of PLAYERS) premoves[p] = [];
+  if (typeof premoveDraft !== 'undefined') premoveDraft = null;
+}
+
+function premoveBannerText() {
+  if (premoveDraft) return 'Premove: مقصد را انتخاب کنید (Player ' + premoveDraft.player + ')';
+  const parts = [];
+  for (const p of PLAYERS) {
+    if (premoves[p] && premoves[p].length) parts.push(p + '×' + premoves[p].length);
+  }
+  if (parts.length) return 'Premove صف: ' + parts.join(' · ');
+  return '';
+}
+
+/** Premove UI click when it is NOT this player's real turn. */
+function handlePremoveClick(r, c) {
+  if (state.gameOver || viewIndex !== null) return false;
+
+  const piece = state.board[r][c];
+  const current = PLAYERS[state.currentPlayerIndex];
+
+  // Cancel: click from-square of any queued premove for that seat
+  for (const p of PLAYERS) {
+    const list = premoves[p];
+    if (!list || !list.length || !isLocalHumanSeat(p)) continue;
+    const idx = list.findIndex((pm) => pm.from.row === r && pm.from.col === c);
+    if (idx >= 0) {
+      list.splice(idx, 1);
+      showMessage('یک premove لغو شد (' + list.length + ' باقی).', 'info');
+      render();
+      return true;
+    }
+  }
+
+  // Start or retarget draft
+  if (!premoveDraft) {
+    if (!piece || !isLocalHumanSeat(piece.player)) return false;
+    const seatIsRealTurn =
+      piece.player === current &&
+      PLAYER_MODE[current] === 'human' &&
+      isLocalHumanSeat(current) &&
+      !aiThinking;
+    if (seatIsRealTurn) return false;
+
+    const legal = generateLegalMovesForPiece(state, piece.player, r, c);
+    if (!legal.length) {
+      showMessage('این مهره حرکت مجازی برای premove ندارد.', 'info');
+      return true;
+    }
+    premoveDraft = {
+      player: piece.player,
+      from: { row: r, col: c },
+      legal: legal.map((m) => ({ row: m.row, col: m.col, promotionType: m.promotionType, enPassant: m.enPassant }))
+    };
+    showMessage('Premove: حالا خانهٔ مقصد را بزنید (نقطه‌های آبی)', 'success');
+    render();
+    return true;
+  }
+
+  // Cancel draft
+  if (premoveDraft.from.row === r && premoveDraft.from.col === c) {
+    premoveDraft = null;
+    showMessage('Premove لغو شد.', 'info');
+    render();
+    return true;
+  }
+
+  // Switch piece (same player)
+  if (piece && piece.player === premoveDraft.player) {
+    const legal = generateLegalMovesForPiece(state, piece.player, r, c);
+    premoveDraft = { player: piece.player, from: { row: r, col: c }, legal };
+    render();
+    return true;
+  }
+
+  // Re-check legality on the CURRENT board (not only the snapshot at draft time)
+  const player = premoveDraft.player;
+  const from = premoveDraft.from;
+  const legalNow = generateLegalMovesForPiece(state, player, from.row, from.col);
+  const match = legalNow.find((m) => m.row === r && m.col === c);
+  if (!match) {
+    showMessage('این خانه الان برای premove مجاز نیست.', 'error');
+    return true;
+  }
+
+  let promotionType = match.promotionType || null;
+  const moving = state.board[from.row][from.col];
+  if (moving && moving.type === 'P' && r === pawnPromotionRow(player) && !promotionType) {
+    promotionType = 'Q';
+  }
+
+  if (!premoves[player]) premoves[player] = [];
+  premoves[player].push({
+    from: { row: from.row, col: from.col },
+    to: { row: r, col: c },
+    promotionType
+  });
+  premoveDraft = null;
+  showMessage('✓ Premove #' + premoves[player].length + ' برای Player ' + player + ' در صف.', 'success');
+  render();
+  return true;
+}
+
+/**
+ * When a human's real turn begins, try their queued premove via the SAME
+ * generateLegalMovesForPiece / makeMove path as a normal move.
+ */
+function revalidatePremoves() {
+  if (typeof premoves === 'undefined' || !premoves) return;
+  for (const p of PLAYERS) {
+    const list = premoves[p];
+    if (!list || !list.length) continue;
+    premoves[p] = list.filter((pm) => {
+      const row = state.board[pm.from.row];
+      const piece = row && row[pm.from.col];
+      if (!piece || piece.player !== p) return false;
+      const legal = generateLegalMovesForPiece(state, p, pm.from.row, pm.from.col);
+      return legal.some((mv) => mv.row === pm.to.row && mv.col === pm.to.col);
+    });
+  }
+}
+
+function tryExecutePremove() {
+  if (state.gameOver || aiThinking || viewIndex !== null) return false;
+  const player = PLAYERS[state.currentPlayerIndex];
+  if (PLAYER_MODE[player] !== 'human' || !isLocalHumanSeat(player)) return false;
+  if (!premoves || !premoves[player] || !premoves[player].length) return false;
+
+  if (ONLINE.role === 'guest' && ONLINE.ready && player !== ONLINE.mySeat) {
+    premoves[player] = []; return false;
+  }
+  if (ONLINE.role === 'host' && ONLINE.ready) {
+    const seat = ONLINE.seats[player];
+    if (seat && seat !== 'local') { premoves[player] = []; return false; }
+  }
+
+  // Drop illegal leading premoves
+  while (premoves[player].length) {
+    const pm = premoves[player][0];
+    const row = state.board[pm.from.row];
+    const piece = row && row[pm.from.col];
+    if (!piece || piece.player !== player) {
+      premoves[player].shift();
+      continue;
+    }
+    const legal = generateLegalMovesForPiece(state, player, pm.from.row, pm.from.col);
+    const match = legal.find((mv) => mv.row === pm.to.row && mv.col === pm.to.col);
+    if (!match) {
+      premoves[player].shift();
+      continue;
+    }
+    // Execute this one
+    premoves[player].shift();
+    let promotionType = pm.promotionType || match.promotionType || null;
+    if (piece.type === 'P' && pm.to.row === pawnPromotionRow(player) && !promotionType) {
+      promotionType = 'Q';
+    }
+    showMessage('⚡ Premove اجرا شد! (' + premoves[player].length + ' در صف)', 'success');
+    finalizeHumanMove(
+      { row: pm.from.row, col: pm.from.col },
+      { row: pm.to.row, col: pm.to.col },
+      player,
+      promotionType
+    );
+    return true;
+  }
+  showMessage('صف premove خالی/غیرقانونی بود — خودتان حرکت کنید.', 'info');
+  render();
+  return false;
+}
+
+
 function handleCellClick(r, c) {
   if (viewIndex !== null) {
     showMessage('در حالت مشاهده هستید. اول «بازگشت به وضعیت فعلی» را بزنید.', 'info');
@@ -4075,26 +4814,32 @@ function handleCellClick(r, c) {
     showMessage('بازی تمام شده است. برای شروع دوباره روی «شروع دوباره» بزنید.', 'info');
     return;
   }
-  if (aiThinking || PLAYER_MODE[PLAYERS[state.currentPlayerIndex]] === 'ai') {
-    showMessage('الان نوبت یک بازیکن AI است — صبر کنید تا حرکتش را انجام دهد.', 'info');
+
+  const current = PLAYERS[state.currentPlayerIndex];
+  const pieceAt = state.board[r][c];
+  const myRealTurn =
+    !aiThinking &&
+    PLAYER_MODE[current] === 'human' &&
+    isLocalHumanSeat(current);
+
+  // CRITICAL: on the active human's real turn, their own pieces = normal move only
+  // (fixes 4-human 2v2 where clicks were swallowed as premove)
+  if (myRealTurn && pieceAt && pieceAt.player === current) {
+    premoveDraft = null; // abandon unfinished premove draft
+  } else if (premoveDraft || !myRealTurn || (pieceAt && isLocalHumanSeat(pieceAt.player) && pieceAt.player !== current)) {
+    if (handlePremoveClick(r, c)) return;
+    if (!myRealTurn) {
+      showMessage('نوبت شما نیست. Premove: مهره → مقصد (حتی گرفتن مهره).', 'info');
+      return;
+    }
+  }
+
+  if (!myRealTurn) {
+    showMessage('نوبت شما نیست. برای premove مهرهٔ خودتان را بزنید.', 'info');
     return;
   }
-  // Online: guests may only move their own seat
-  if (ONLINE.role === 'guest' && ONLINE.ready) {
-    const cur = PLAYERS[state.currentPlayerIndex];
-    if (cur !== ONLINE.mySeat) {
-      showMessage('نوبت شما نیست — منتظر حرکت بازیکن ' + cur + ' بمانید.', 'info');
-      return;
-    }
-  }
-  if (ONLINE.role === 'host' && ONLINE.ready) {
-    const cur = PLAYERS[state.currentPlayerIndex];
-    // Host can move local seat; remote seats wait for network; AI handled separately
-    if (ONLINE.seats[cur] && ONLINE.seats[cur] !== 'local' && ONLINE.seats[cur] !== 'ai') {
-      showMessage('نوبت بازیکن آنلاین است — منتظر حرکت او بمانید.', 'info');
-      return;
-    }
-  }
+
+  premoveDraft = null;
 
   const player = PLAYERS[state.currentPlayerIndex];
   const piece = state.board[r][c];
@@ -4102,6 +4847,7 @@ function handleCellClick(r, c) {
   if (!state.selected) {
     if (!piece) return;
     if (piece.player !== player) {
+      if (handlePremoveClick(r, c)) return;
       showMessage(`این مهره متعلق به Player ${piece.player} است — الان نوبت Player ${player} است.`, 'error');
       return;
     }
@@ -4171,11 +4917,18 @@ function finalizeHumanMove(from, to, movingPlayer, promotionType) {
     return;
   }
 
+  // Premove for the player who just moved is consumed/obsolete
+  clearPremove(movingPlayer);
   playMoveSound();
   describeMoveOutcome(movingPlayer, logLenBefore);
   recordPositionSnapshot();
+  if (typeof revalidatePremoves === 'function') revalidatePremoves();
   render();
-  maybeTriggerAI();
+  // Short pause so the human can register a premove on a stable board
+  // before AI starts moving (premove is still validated at execution time).
+  setTimeout(() => {
+    try { maybeTriggerAI(); } catch (_) {}
+  }, 900);
 }
 
 // --- Audio FX (Web Audio API, no external files) --------------------------
@@ -4343,6 +5096,20 @@ function wireAIWorker() {
 aiWorker = createAIWorker();
 wireAIWorker();
 
+// Safety net: if a human turn is active and a premove is queued, try to run it
+setInterval(function premoveWatchdog() {
+  try {
+    if (typeof state === 'undefined' || !state || state.gameOver) return;
+    if (typeof aiThinking !== 'undefined' && aiThinking) return;
+    if (typeof viewIndex !== 'undefined' && viewIndex !== null) return;
+    const p = PLAYERS[state.currentPlayerIndex];
+    if (PLAYER_MODE[p] !== 'human') return;
+    if (!premoves || !premoves[p] || !premoves[p].length) return;
+    tryExecutePremove();
+  } catch (_) {}
+}, 250);
+
+
 // Runs the AI for the current player if that player is AI-controlled, then
 // (via its own render + recursive call) keeps chaining through however many
 // consecutive AI-controlled turns follow - e.g. all 4 players set to AI will
@@ -4351,7 +5118,11 @@ function maybeTriggerAI() {
   // Never play while the user is browsing move history
   if (state.gameOver || aiThinking || viewIndex !== null) return;
   const player = PLAYERS[state.currentPlayerIndex];
-  if (PLAYER_MODE[player] !== 'ai') return;
+  if (PLAYER_MODE[player] !== 'ai') {
+    // Human turn: attempt queued premove (validated with real rules)
+    tryExecutePremove();
+    return;
+  }
 
   aiThinking = true;
   const depth = currentAIDepth();
@@ -4393,6 +5164,7 @@ function completeAIMove(player, move, logLenBefore) {
   playMoveSound();
   recordPositionSnapshot();
   describeMoveOutcome(player, logLenBefore);
+  if (typeof revalidatePremoves === 'function') revalidatePremoves();
   render();
   maybeTriggerAI();
 }
@@ -4450,7 +5222,13 @@ function syncTurnTimer() {
   const shouldRun = !isViewing && !state.gameOver && !aiThinking && PLAYER_MODE[player] !== 'ai';
   if (!shouldRun) { stopTurnTimer(); return; }
   const token = player + ':' + state.moveHistory.length;
-  if (token !== timerTurnToken) startTurnTimer(token);
+  if (token !== timerTurnToken) {
+    startTurnTimer(token);
+    // New human turn — try queued premove once
+    if (typeof tryExecutePremove === 'function') {
+      setTimeout(() => { try { tryExecutePremove(); } catch(_){} }, 0);
+    }
+  }
 }
 
 // Called when a human player's turn timer reaches zero: their turn is
@@ -4482,6 +5260,7 @@ function restartGame() {
   stopPendingAI();
   stopMatchClock();
   state = createInitialState();
+  if (typeof clearAllPremoves === 'function') clearAllPremoves();
   refreshAllKingDisplays(state);
   undoStack = [];
   viewIndex = null;
@@ -4629,6 +5408,53 @@ document.querySelectorAll('#timeControlPicker .seg-btn').forEach((btn) => {
 });
 
 document.getElementById('cardPlayBot').addEventListener('click', () => showView('botSetupView'));
+(function wireNewHomeCards(){
+  const bots = document.getElementById('cardPlayBotsHub');
+  if (bots) bots.addEventListener('click', () => showView('botsHubView'));
+  const gm = document.getElementById('cardGameModes');
+  if (gm) gm.addEventListener('click', () => showView('gameModesView'));
+  const backB = document.getElementById('backFromBotsHubBtn');
+  if (backB) backB.addEventListener('click', () => showView('homeView'));
+  const backG = document.getElementById('backFromGameModesBtn');
+  if (backG) backG.addEventListener('click', () => showView('homeView'));
+  const backV = document.getElementById('backFromVariantsBtn');
+  if (backV) backV.addEventListener('click', () => showView('homeView'));
+  const botsCard = document.getElementById('cardPlayBotsHub');
+  if (botsCard) botsCard.addEventListener('click', () => {
+    c1InitStockfish();
+    c1RenderBotGrid();
+    showView('botsHubView');
+  });
+  document.querySelectorAll('#botColorPicker .seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#botColorPicker .seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+  const b4 = document.getElementById('botsHub4p');
+  if (b4) b4.addEventListener('click', () => showView('botSetupView'));
+  // game modes format picker
+  document.querySelectorAll('#gmFormatPicker .seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#gmFormatPicker .seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+  const cont = document.getElementById('gmContinueBtn');
+  if (cont) cont.addEventListener('click', () => {
+    const fmt = document.querySelector('#gmFormatPicker .seg-btn.active')?.dataset.format || '1v1';
+    window._gmSelected = {
+      format: fmt,
+      mode: document.querySelector('input[name="gmMode"]:checked')?.value || 'standard'
+    };
+    if (fmt === '1v1') {
+      c1InitStockfish();
+      showView('setup1v1View');
+    } else {
+      showView('botSetupView');
+    }
+  });
+})();
 document.getElementById('backFromSetupBtn').addEventListener('click', () => showView('homeView'));
 document.getElementById('backFromGameBtn').addEventListener('click', () => {
   stopPendingAI();
@@ -4682,6 +5508,7 @@ function startNewGameFromSetup() {
   stopMatchClock();
 
   state = createInitialState();
+  if (typeof clearAllPremoves === 'function') clearAllPremoves();
   refreshAllKingDisplays(state);
   undoStack = [];
   viewIndex = null;
@@ -5174,6 +6001,7 @@ function onlineStartGameAsHost() {
   stopTurnTimer();
   stopMatchClock();
   state = createInitialState();
+  if (typeof clearAllPremoves === 'function') clearAllPremoves();
   refreshAllKingDisplays(state);
   undoStack = [];
   viewIndex = null;
@@ -5363,8 +6191,19 @@ function c1InitialBoard(){
   return b;
 }
 
+function c1RepKey(state){
+  // Threefold key: placement + side to move + castling + ep (no clocks)
+  const fen = c1ToFen(state);
+  return fen.split(' ').slice(0, 4).join(' ');
+}
+function c1CountRep(state, key){
+  let n = 0;
+  const arr = state.posKeys || [];
+  for (let i = 0; i < arr.length; i++) if (arr[i] === key) n++;
+  return n;
+}
 function c1NewState(){
-  return {
+  const s = {
     board: c1InitialBoard(),
     turn: 'w',
     castling: { wK:true, wQ:true, bK:true, bQ:true },
@@ -5378,7 +6217,10 @@ function c1NewState(){
     gameOver: false,
     result: null,
     lastMove: null,
+    posKeys: [],
   };
+  s.posKeys.push(c1RepKey(s));
+  return s;
 }
 
 function c1Clone(s){ return JSON.parse(JSON.stringify(s)); }
@@ -5603,9 +6445,16 @@ function c1MakeMove(state, from, to){
   state.turn = state.turn==='w'?'b':'w';
   state.selected=null; state.legal=[];
 
+  if (!state.posKeys) state.posKeys = [];
+  const key = c1RepKey(state);
+  state.posKeys.push(key);
+
   if(c1InsufficientMaterial(state.board)){
     state.gameOver=true;
     state.result='draw-material';
+  } else if (c1CountRep(state, key) >= 3) {
+    state.gameOver=true;
+    state.result='draw-repetition';
   } else {
     const replies = c1AllLegal(state);
     if(replies.length===0){
@@ -5748,6 +6597,42 @@ const C1_STRENGTH = {
   4: { skill: 14, depth: 16, movetime: 1500, label: '~2000' },
   5: { skill: 20, depth: 20, movetime: 2500, label: '~2400+' },
 };
+
+/** Personality bots (1v1) — like Chess.com characters */
+const C1_BOTS = [
+  {
+    id: 'martin', name: 'مارتین', avatar: '🐣', rating: 250,
+    strength: 1, blunder: 0.55, style: 'تازه‌کار؛ زیاد اشتباه می‌کند',
+    tag: 'مبتدی', quote: 'اوه… این درست بود؟'
+  },
+  {
+    id: 'nilo', name: 'نیلو', avatar: '🌿', rating: 800,
+    strength: 1, blunder: 0.28, style: 'آرام و محتاط، گاهی گیج می‌شود',
+    tag: 'آسان', quote: 'بگذار فکر کنم…'
+  },
+  {
+    id: 'arya', name: 'آریا', avatar: '🔥', rating: 1200,
+    strength: 2, blunder: 0.12, style: 'تهاجمی؛ عاشق قربانی و حمله',
+    tag: 'متوسط', quote: 'حمله!'
+  },
+  {
+    id: 'kaveh', name: 'کاوه', avatar: '🛡️', rating: 1500,
+    strength: 3, blunder: 0.06, style: 'محکم و موضعی؛ کمتر ریسک می‌کند',
+    tag: 'سخت', quote: 'صبر کن…'
+  },
+  {
+    id: 'leila', name: 'لیلا', avatar: '🎯', rating: 1800,
+    strength: 4, blunder: 0.03, style: 'تاکتیکی و دقیق',
+    tag: 'قوی', quote: 'یافتم.'
+  },
+  {
+    id: 'nouri', name: 'استاد نوری', avatar: '👑', rating: 2200,
+    strength: 5, blunder: 0.0, style: 'قوی‌ترین ربات فعلی',
+    tag: 'استاد', quote: '…'
+  },
+];
+let s1ActiveBot = null; // current personality or null (generic strength)
+
 
 let c1SfWorker = null;
 let c1SfReady = false;
@@ -5921,26 +6806,62 @@ function c1Msg(t, kind){
   el1.msg.className = 'message-bar ' + (kind||'info');
 }
 
+function c1ShouldFlip(){
+  // Always put the human's color at the bottom in vs-AI; in hvh keep white at bottom
+  return (s1Mode === 'hva' && s1HumanColor === 'b');
+}
+function c1Disp(r, c){
+  if (c1ShouldFlip()) return { r: 7 - r, c: 7 - c };
+  return { r, c };
+}
+function c1FromDisp(dr, dc){
+  if (c1ShouldFlip()) return { r: 7 - dr, c: 7 - dc };
+  return { r: dr, c: dc };
+}
+function c1Perspective(){
+  // Eval bar / scores from the human's point of view when vs AI
+  if (s1Mode === 'hva') return s1HumanColor || 'w';
+  return 'w';
+}
+function c1ScoreForPerspective(scoreStr){
+  // Stockfish scores are always from White. Convert to player perspective.
+  if (c1Perspective() === 'w') return scoreStr;
+  if (scoreStr == null || scoreStr === '—') return scoreStr;
+  if (typeof scoreStr === 'string' && scoreStr.charAt(0) === 'M') {
+    return '-M' + scoreStr.slice(1);
+  }
+  if (typeof scoreStr === 'string' && scoreStr.indexOf('-M') === 0) {
+    return 'M' + scoreStr.slice(2);
+  }
+  const n = parseFloat(scoreStr);
+  if (isNaN(n)) return scoreStr;
+  const inv = -n;
+  return (inv > 0 ? '+' : '') + inv.toFixed(2);
+}
+
 function c1BuildCoordLabels(){
   const ranks = document.getElementById('ranks1v1');
   const files = document.getElementById('files1v1');
+  const flip = c1ShouldFlip();
   if (ranks) {
     ranks.innerHTML = '';
-    for (let r = 0; r < 8; r++) {
+    for (let dr = 0; dr < 8; dr++) {
       const d = document.createElement('span');
-      d.textContent = String(8 - r);
+      // top row label
+      d.textContent = flip ? String(dr + 1) : String(8 - dr);
       ranks.appendChild(d);
     }
   }
   if (files) {
     files.innerHTML = '';
-    for (let c = 0; c < 8; c++) {
+    for (let dc = 0; dc < 8; dc++) {
       const d = document.createElement('span');
-      d.textContent = C1.FILES[c];
+      d.textContent = flip ? C1.FILES[7 - dc] : C1.FILES[dc];
       files.appendChild(d);
     }
   }
 }
+
 
 
 let c1Drag = null;
@@ -5966,8 +6887,10 @@ function c1CellFromPoint(x, y){
 function c1BuildBoard(){
   if (!el1.board) return;
   el1.board.innerHTML = '';
-  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+  for (let dr = 0; dr < 8; dr++) for (let dc = 0; dc < 8; dc++) {
+    const { r, c } = c1FromDisp(dr, dc);
     const cell = document.createElement('div');
+    // square color from logical coords so colors stay correct when flipped
     cell.className = 'cell ' + (((r + c) % 2 === 0) ? 'light' : 'dark');
     cell.dataset.r = r;
     cell.dataset.c = c;
@@ -6056,14 +6979,18 @@ function c1BuildBoard(){
   c1BuildCoordLabels();
 }
 
-function c1Cell(r,c){ return el1.board.children[r*8+c]; }
+function c1Cell(r,c){
+  const d = c1Disp(r, c);
+  return el1.board.children[d.r * 8 + d.c];
+}
 
 function c1Render(){
   if(!el1.board) return;
-  const flip = (s1Mode==='hva' && s1HumanColor==='b');
+  // Re-label coords if orientation changed
+  c1BuildCoordLabels();
   for(let r=0;r<8;r++) for(let c=0;c<8;c++){
     const cell=c1Cell(r,c);
-    cell.classList.remove('selected','legal-move','legal-capture','last-move','in-check');
+    cell.classList.remove('selected','legal-move','legal-capture','last-move','in-check','premove-from','premove-to','premove-legal','premove-legal-capture');
     cell.innerHTML='';
     const piece=s1.board[r][c];
     if(piece){
@@ -6087,6 +7014,30 @@ function c1Render(){
       cell.classList.add(cap?'legal-capture':'legal-move');
     }
   }
+  if (c1PremoveDraft) {
+    c1Cell(c1PremoveDraft.from.r, c1PremoveDraft.from.c).classList.add('premove-from');
+    for (const mv of c1PremoveDraft.legal) {
+      const cell = c1Cell(mv.r, mv.c);
+      const cap = !!s1.board[mv.r][mv.c] || mv.enPassant;
+      cell.classList.add(cap ? 'premove-legal-capture' : 'premove-legal');
+    }
+  }
+  if (c1PremoveQueue && c1PremoveQueue.length) {
+    for (const pm of c1PremoveQueue) {
+      try {
+        c1Cell(pm.from.r, pm.from.c).classList.add('premove-from');
+        const dest = c1Cell(pm.to.r, pm.to.c);
+        dest.classList.add('premove-to');
+        const fromPiece = s1.board[pm.from.r][pm.from.c];
+        if (fromPiece && !dest.querySelector('.premove-ghost')) {
+          const g = document.createElement('span');
+          g.className = 'piece-1v1 premove-ghost ' + (fromPiece.color === 'w' ? 'white' : 'black');
+          g.textContent = C1.GLYPH[fromPiece.color][fromPiece.type];
+          dest.appendChild(g);
+        }
+      } catch(_){}
+    }
+  }
 
   const turnName = s1.turn==='w'?'سفید':'سیاه';
   el1.turn.textContent = s1.gameOver ? 'پایان بازی' : ('نوبت: ' + turnName + (s1AiThinking?' (ربات فکر می‌کند…)':''));
@@ -6101,7 +7052,7 @@ function c1Render(){
 
   if(s1.gameOver){
     el1.over.classList.add('show');
-    const map={ 'w-wins':'سفید برنده شد (مات)', 'b-wins':'سیاه برنده شد (مات)', 'draw-stalemate':'مساوی — پات', 'draw-50':'مساوی — قانون ۵۰ حرکت', 'draw-material':'مساوی — کمبود مهره' };
+    const map={ 'w-wins':'سفید برنده شد (مات)', 'b-wins':'سیاه برنده شد (مات)', 'draw-stalemate':'مساوی — پات', 'draw-50':'مساوی — قانون ۵۰ حرکت', 'draw-material':'مساوی — کمبود مهره', 'draw-repetition':'مساوی — تکرار سه‌باره وضعیت' };
     el1.over.textContent = map[s1.result] || s1.result;
   } else el1.over.classList.remove('show');
 
@@ -6122,9 +7073,113 @@ function c1IsHumanTurn(){
   return s1.turn === s1HumanColor;
 }
 
+
+// ===== 1v1 Premove =====
+let c1PremoveQueue = []; // [{ from, to }]
+let c1PremoveDraft = null;
+
+function c1ClearPremove(){ c1PremoveQueue = []; c1PremoveDraft = null; }
+
+function c1TryPremoveClick(r, c){
+  if (s1.gameOver) return false;
+  // On human turn, only premove if somehow not acting (AI thinking with human clock edge case)
+  if (c1IsHumanTurn() && !s1AiThinking) return false;
+  const piece = s1.board[r][c];
+
+  // Cancel one queued premove by from-square
+  const cancelIdx = c1PremoveQueue.findIndex(pm => pm.from.r === r && pm.from.c === c);
+  if (cancelIdx >= 0 && !c1PremoveDraft) {
+    c1PremoveQueue.splice(cancelIdx, 1);
+    c1Msg('Premove لغو شد (' + c1PremoveQueue.length + ' در صف).', 'info');
+    c1Render();
+    return true;
+  }
+
+  if (!c1PremoveDraft) {
+    if (!piece) return false;
+    if (s1Mode === 'hva' && piece.color !== s1HumanColor) return false;
+    if (piece.color === s1.turn && !s1AiThinking) return false;
+    const legal = c1LegalMoves(s1, r, c);
+    if (!legal.length) {
+      c1Msg('این مهره حرکت مجازی ندارد.', 'info');
+      return true;
+    }
+    c1PremoveDraft = { color: piece.color, from: { r, c }, legal };
+    c1Msg('Premove: مقصد را بزنید (گرفتن هم مجاز است).', 'info');
+    c1Render();
+    return true;
+  }
+  if (c1PremoveDraft.from.r === r && c1PremoveDraft.from.c === c) {
+    c1PremoveDraft = null;
+    c1Msg('انتخاب لغو شد.', 'info');
+    c1Render();
+    return true;
+  }
+  if (piece && piece.color === c1PremoveDraft.color) {
+    c1PremoveDraft = { color: piece.color, from: { r, c }, legal: c1LegalMoves(s1, r, c) };
+    c1Render();
+    return true;
+  }
+  // Revalidate on current board (captures included)
+  const legalNow = c1LegalMoves(s1, c1PremoveDraft.from.r, c1PremoveDraft.from.c);
+  const match = legalNow.find(m => m.r === r && m.c === c);
+  if (!match) {
+    c1Msg('Premove غیرمجاز (از جمله گرفتن).', 'error');
+    return true;
+  }
+  let promotionType = match.promotionType || null;
+  const moving = s1.board[c1PremoveDraft.from.r][c1PremoveDraft.from.c];
+  if (moving && moving.type === 'P' && (r === 0 || r === 7) && !promotionType) promotionType = 'Q';
+  c1PremoveQueue.push({
+    from: { r: c1PremoveDraft.from.r, c: c1PremoveDraft.from.c },
+    to: Object.assign({}, match, promotionType ? { promotionType } : {})
+  });
+  c1PremoveDraft = null;
+  c1Msg('Premove #' + c1PremoveQueue.length + ' در صف.', 'success');
+  c1Render();
+  return true;
+}
+
+function c1TryExecutePremove(){
+  if (s1.gameOver || s1AiThinking || !c1PremoveQueue.length) return false;
+  if (!c1IsHumanTurn()) return false;
+  while (c1PremoveQueue.length) {
+    const pm = c1PremoveQueue[0];
+    const legal = c1LegalMoves(s1, pm.from.r, pm.from.c);
+    const ok = legal.find(m => m.r === pm.to.r && m.c === pm.to.c &&
+      (!pm.to.promotionType || m.promotionType === pm.to.promotionType));
+    if (!ok) {
+      c1PremoveQueue.shift();
+      continue;
+    }
+    c1PremoveQueue.shift();
+    const move = Object.assign({}, ok);
+    if (pm.to.promotionType) move.promotionType = pm.to.promotionType;
+    c1Msg('⚡ Premove اجرا شد! (' + c1PremoveQueue.length + ' باقی)', 'success');
+    // Don't clear entire queue in commit
+    const keep = c1PremoveQueue.slice();
+    c1CommitHumanMove(pm.from, move);
+    c1PremoveQueue = keep;
+    return true;
+  }
+  c1Msg('صف premove خالی/غیرقانونی بود.', 'info');
+  c1Render();
+  return false;
+}
+
 function c1Click(r,c){
-  if(s1.gameOver || s1AiThinking) return;
-  if(!c1IsHumanTurn()){ c1Msg('نوبت ربات است.', 'info'); return; }
+  if(s1.gameOver) return;
+  if(s1AiThinking){
+    if (c1TryPremoveClick(r,c)) return;
+    c1Msg('ربات در حال فکر… — می‌توانید premove ثبت کنید.', 'info');
+    return;
+  }
+  if(!c1IsHumanTurn()){
+    if (c1TryPremoveClick(r,c)) return;
+    c1Msg('نوبت حریف است — برای premove مهره خود را انتخاب کنید.', 'info');
+    return;
+  }
+  c1PremoveDraft = null;
   const piece=s1.board[r][c];
   if(!s1.selected){
     if(!piece || piece.color!==s1.turn) return;
@@ -6187,6 +7242,8 @@ function c1MoveToUci(from, to){
 }
 
 function c1CommitHumanMove(from, move){
+  // Keep remaining premove queue; only clear draft
+  c1PremoveDraft = null;
   s1Undo.push(c1Clone(s1));
   const sanBefore = s1.history.length;
   c1MakeMove(s1, from, move);
@@ -6209,20 +7266,46 @@ function c1ApplyAiMove(mv){
   if(!s1.moveLog) s1.moveLog = [];
   s1.moveLog.push({ uci: c1MoveToUci(mv.from, mv.to), san, from: mv.from, to: mv.to });
   try{ AudioFX.move(); }catch(_){}
-  c1Msg('Stockfish بازی کرد.', 'success');
+  c1Msg(c1BotName() + ' بازی کرد.', 'success');
   c1Render();
   if(s1.gameOver) c1OnGameOver();
+  else c1TryExecutePremove();
 }
 
+function c1BotName(){
+  return (s1ActiveBot && s1ActiveBot.name) ? s1ActiveBot.name : 'ربات';
+}
+function c1PickBlunderMove(state){
+  const all = c1AllLegal(state);
+  if (!all.length) return null;
+  // Prefer non-hanging captures randomly among all moves
+  return all[Math.floor(Math.random() * all.length)];
+}
 function c1MaybeAi(){
-  if(s1.gameOver || s1Mode!=='hva') return;
-  if(s1.turn === s1HumanColor) return;
+  if(s1.gameOver) return;
+  if(c1IsHumanTurn()){
+    c1TryExecutePremove();
+    return;
+  }
+  if(s1Mode!=='hva') return;
   s1AiThinking=true; c1Render();
   c1InitStockfish();
   const fen = c1ToFen(s1);
-  const strength = s1AiDepth;
-  c1Msg(c1SfReady ? 'Stockfish در حال فکر…' : 'در حال لود موتور…', 'info');
+  const bot = s1ActiveBot;
+  const strength = bot ? bot.strength : s1AiDepth;
+  const blunder = bot ? (bot.blunder || 0) : 0;
+  const thinking = bot ? (bot.name + ' در حال فکر…') : (c1SfReady ? 'Stockfish در حال فکر…' : 'در حال لود موتور…');
+  c1Msg(thinking, 'info');
   setTimeout(()=>{
+    // Personality blunder: sometimes play a random legal move
+    if (blunder > 0 && Math.random() < blunder) {
+      const bad = c1PickBlunderMove(s1);
+      if (bad) {
+        c1ApplyAiMove(bad);
+        c1Msg((bot && bot.quote) ? bot.quote : (c1BotName() + ' اشتباه کرد!'), 'info');
+        return;
+      }
+    }
     c1SfGo(fen, strength, (uci) => {
       if(uci){
         const parsed = c1ParseUci(uci);
@@ -6235,38 +7318,82 @@ function c1MaybeAi(){
             const mv = { from: parsed.from, to: Object.assign({}, ok) };
             if(parsed.to.promotionType) mv.to.promotionType = parsed.to.promotionType;
             c1ApplyAiMove(mv);
-            c1Msg('Stockfish بازی کرد.', 'success');
+            c1Msg(c1BotName() + ' بازی کرد.', 'success');
             return;
           }
         }
         console.warn('UCI not matched legal moves', uci);
       }
-      c1Msg('Stockfish در دسترس نیست — موتور ضعیف جایگزین شد.', 'error');
-      const fb = c1BestMoveFallback(s1, 3);
+      c1Msg('موتور در دسترس نیست — حرکت جایگزین.', 'error');
+      const fb = c1BestMoveFallback(s1, 2);
       c1ApplyAiMove(fb);
     });
-  }, 40);
+  }, bot ? (180 + Math.random() * 420) : 40);
 }
 
 function c1StartFromSetup(){
   s1Mode = document.querySelector('#mode1v1Picker .seg-btn.active')?.dataset.mode || 'hva';
   s1HumanColor = document.querySelector('#color1v1Picker .seg-btn.active')?.dataset.color || 'w';
   s1AiDepth = parseInt(document.getElementById('ai1v1Depth').value,10)||2;
+  if (s1Mode !== 'hva') s1ActiveBot = null;
   s1 = c1NewState();
   s1Undo = [];
   s1AiThinking=false;
   c1Bind();
   c1BuildBoard();
   showView('game1v1View');
-  c1Msg('بازی شروع شد.', 'info');
+  const t1 = document.getElementById('title1v1');
+  if (t1) t1.textContent = s1ActiveBot ? (s1ActiveBot.avatar + ' ' + s1ActiveBot.name) : 'شطرنج ۱v۱';
+  c1Msg(s1ActiveBot ? ('در برابر ' + s1ActiveBot.name) : 'بازی شروع شد.', 'info');
   c1Render();
-  c1MaybeAi(); // if human is black, AI moves first
+  c1MaybeAi();
+}
+
+function c1StartVsBot(botId){
+  const bot = C1_BOTS.find(b => b.id === botId);
+  if (!bot) return;
+  s1ActiveBot = bot;
+  s1Mode = 'hva';
+  s1HumanColor = document.querySelector('#botColorPicker .seg-btn.active')?.dataset.color || 'w';
+  s1AiDepth = bot.strength;
+  s1 = c1NewState();
+  s1Undo = [];
+  s1AiThinking = false;
+  c1Bind();
+  c1BuildBoard();
+  showView('game1v1View');
+  const t1 = document.getElementById('title1v1');
+  if (t1) t1.textContent = bot.avatar + ' ' + bot.name;
+  c1Msg('در برابر ' + bot.name + ' (≈' + bot.rating + ')', 'info');
+  c1Render();
+  c1MaybeAi();
+}
+
+function c1RenderBotGrid(){
+  const grid = document.getElementById('botGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  C1_BOTS.forEach(bot => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bot-card';
+    btn.innerHTML =
+      '<div class="bot-avatar">' + bot.avatar + '</div>' +
+      '<div class="bot-name">' + bot.name + '</div>' +
+      '<div class="bot-rating">≈' + bot.rating + '</div>' +
+      '<div class="bot-style">' + bot.style + '</div>' +
+      '<div class="bot-tag">' + bot.tag + '</div>';
+    btn.addEventListener('click', () => c1StartVsBot(bot.id));
+    grid.appendChild(btn);
+  });
 }
 
 function c1Restart(){
+  c1ClearPremove();
   s1 = c1NewState();
   s1Undo=[];
   s1AiThinking=false;
+  c1BuildBoard();
   c1Msg('بازی از نو شروع شد.', 'info');
   c1Render();
   c1MaybeAi();
@@ -6304,7 +7431,7 @@ function c1SaveRecent(list){
   try { localStorage.setItem(C1_RECENT_KEY, JSON.stringify(list.slice(0, C1_RECENT_MAX))); } catch(_){}
 }
 function c1ResultLabel(result){
-  const map={ 'w-wins':'برد سفید', 'b-wins':'برد سیاه', 'draw-stalemate':'پات', 'draw-50':'تساوی ۵۰', 'draw-material':'کمبود مهره' };
+  const map={ 'w-wins':'برد سفید', 'b-wins':'برد سیاه', 'draw-stalemate':'پات', 'draw-50':'تساوی ۵۰ حرکت', 'draw-material':'کمبود مهره', 'draw-repetition':'تساوی — تکرار وضعیت' };
   return map[result] || result || '—';
 }
 function c1SnapshotGame(){
@@ -6325,115 +7452,275 @@ function c1OnGameOver(){
   setTimeout(() => c1OpenAnalysis(snap, true), 400);
 }
 
-function c1OpenAnalysis(game, autoHint){
-  const ov = document.getElementById('analysisOverlay');
-  if(!ov) return;
-  ov.style.display = 'flex';
-  window._c1AnalysisGame = game;
-  document.getElementById('analysisTitle').textContent = 'آنالیز — ' + c1ResultLabel(game.result);
-  document.getElementById('analysisSub').textContent =
-    (game.date || '') + ' · ' + (game.moves ? game.moves.length : 0) + ' نیم‌حرکت' +
-    (autoHint ? ' · برای شروع آنالیز دکمه را بزنید' : '');
-  const ol = document.getElementById('analysisMoves');
-  ol.innerHTML = '';
-  (game.moves || []).forEach((m, i) => {
-    const li = document.createElement('li');
-    li.innerHTML = '<span>' + (Math.floor(i/2)+1) + (i%2===0?'. ':'... ') + (m.san || m.uci) + '</span><span class="ev" data-i="'+i+'">—</span>';
-    ol.appendChild(li);
-  });
-  c1RenderRecentList();
+function c1SetEvalBar(scoreStr){
+  const youBar = document.getElementById('evalBarYou');
+  const label = document.getElementById('evalScoreLabel');
+  const topL = document.getElementById('evalLabelTop');
+  const botL = document.getElementById('evalLabelBottom');
+  if (!youBar || !label) return;
+  const persp = c1Perspective();
+  const adj = c1ScoreForPerspective(scoreStr);
+  // Vertical bar: BOTTOM = you, TOP = opponent
+  if (topL && botL) {
+    botL.textContent = persp === 'w' ? 'شما' : 'شما';
+    topL.textContent = 'حریف';
+    // color tint by side
+    botL.style.color = persp === 'w' ? 'var(--piece-w, #eee)' : 'var(--text-muted)';
+    topL.style.color = persp === 'w' ? 'var(--text-muted)' : 'var(--piece-w, #eee)';
+  }
+  let pct = 50;
+  let display = '0.00';
+  if (typeof adj === 'string' && adj.charAt(0) === 'M') {
+    pct = 97;
+    display = adj;
+    label.style.color = 'var(--ok)';
+  } else if (typeof adj === 'string' && adj.indexOf('-M') === 0) {
+    pct = 3;
+    display = adj;
+    label.style.color = 'var(--danger)';
+  } else {
+    const n = parseFloat(adj);
+    if (!isNaN(n)) {
+      const clamped = Math.max(-6, Math.min(6, n));
+      pct = 50 + clamped * (45 / 6);
+      display = (n > 0 ? '+' : '') + n.toFixed(2);
+      label.style.color = n > 0.35 ? 'var(--ok)' : (n < -0.35 ? 'var(--danger)' : 'var(--gold)');
+    }
+  }
+  // height from bottom = your share
+  youBar.style.width = '100%';
+  youBar.style.height = pct + '%';
+  // your color: light if white, darker gold if black
+  if (persp === 'w') {
+    youBar.style.background = 'linear-gradient(0deg, #e8e4dc, #faf7f0)';
+  } else {
+    youBar.style.background = 'linear-gradient(0deg, #2a2a2a, #4a4a4a)';
+  }
+  label.textContent = display;
 }
 
-function c1RenderRecentList(){
-  const ul = document.getElementById('recentGamesList');
-  if(!ul) return;
-  const list = c1LoadRecent();
-  ul.innerHTML = '';
-  if(!list.length){
-    ul.innerHTML = '<li style="color:var(--text-muted)">هنوز بازی ذخیره‌ای نیست.</li>';
+function c1AnalysisState(){
+  if (!window._c1An) {
+    window._c1An = {
+      game: null,
+      scores: [],      // stockfish raw (white POV) per position index (0 = start)
+      ready: false,
+      running: false,
+      cursor: 0,        // which move index we're viewing (0 = before any move)
+      maxMove: 0
+    };
+  }
+  return window._c1An;
+}
+
+function c1UpdateNavUI(){
+  const an = c1AnalysisState();
+  const prev = document.getElementById('analysisPrevBtn');
+  const next = document.getElementById('analysisNextBtn');
+  const pos = document.getElementById('analysisMovePos');
+  if (prev) prev.disabled = an.cursor <= 0;
+  if (next) next.disabled = an.cursor >= an.maxMove;
+  if (pos) {
+    if (an.cursor <= 0) pos.textContent = 'شروع';
+    else pos.textContent = an.cursor + ' / ' + an.maxMove;
+  }
+  // highlight move list
+  document.querySelectorAll('#analysisMoves li').forEach((li, i) => {
+    li.classList.toggle('active-move', i === an.cursor - 1);
+  });
+}
+
+function c1RenderAnalysisBoard(cursor){
+  const an = c1AnalysisState();
+  const boardEl = document.getElementById('analysisMiniBoard');
+  const noteEl = document.getElementById('analysisEvalNote');
+  if (!boardEl) return;
+  const boards = an.boards || [];
+  const b = boards[cursor];
+  boardEl.innerHTML = '';
+  if (!b) {
+    if (noteEl) noteEl.textContent = 'موقعیت این حرکت هنوز آماده نیست…';
     return;
   }
-  list.forEach((g) => {
-    const li = document.createElement('li');
-    const span = document.createElement('span');
-    span.textContent = (g.date||'') + ' — ' + c1ResultLabel(g.result) + ' (' + (g.moves||[]).length + ')';
-    li.appendChild(span);
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = 'آنالیز';
-    btn.addEventListener('click', () => c1OpenAnalysis(g, false));
-    li.appendChild(btn);
-    ul.appendChild(li);
-  });
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const sq = document.createElement('div');
+    sq.className = 'msq ' + (((r + c) % 2 === 0) ? 'l' : 'd');
+    const piece = b[r][c];
+    if (piece) {
+      sq.textContent = C1.GLYPH[piece.color][piece.type];
+      sq.style.color = piece.color === 'w' ? 'var(--piece-w, #f5f2eb)' : 'var(--piece-b, #9ec1ff)';
+    }
+    // last move highlight
+    if (an.lastMoves && an.lastMoves[cursor]) {
+      const lm = an.lastMoves[cursor];
+      if ((lm.fr === r && lm.fc === c) || (lm.tr === r && lm.tc === c)) sq.classList.add('last');
+    }
+    boardEl.appendChild(sq);
+  }
+  if (noteEl) {
+    const sc = an.scores[cursor];
+    const prev = cursor > 0 ? an.scores[cursor - 1] : null;
+    const shown = c1ScoreForPerspective(sc);
+    let deltaTxt = '';
+    if (prev != null && sc != null) {
+      const a = parseFloat(c1ScoreForPerspective(prev));
+      const b2 = parseFloat(c1ScoreForPerspective(sc));
+      if (!isNaN(a) && !isNaN(b2)) {
+        const d = b2 - a;
+        deltaTxt = ' · تغییر ارزیابی: ' + (d > 0 ? '+' : '') + d.toFixed(2);
+      }
+    }
+    const mvLabel = cursor === 0 ? 'وضعیت شروع' : ('بعد از حرکت ' + cursor);
+    noteEl.textContent = mvLabel + ' · ارزیابی: ' + (shown || '—') + deltaTxt +
+      ' (از دید شما)';
+  }
+}
+
+function c1ShowAnalysisAt(cursor){
+  const an = c1AnalysisState();
+  an.cursor = Math.max(0, Math.min(cursor, an.maxMove));
+  c1UpdateNavUI();
+  const sc = an.scores[an.cursor];
+  if (sc != null) c1SetEvalBar(sc);
+  else c1SetEvalBar('0.00');
+  c1RenderAnalysisBoard(an.cursor);
+  const li = document.querySelector('#analysisMoves li.active-move');
+  if (li) try { li.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(_){}
 }
 
 function c1CloseAnalysis(){
   const ov = document.getElementById('analysisOverlay');
-  if(ov) ov.style.display = 'none';
+  if (ov) ov.style.display = 'none';
+}
+
+function c1OpenAnalysis(game, autoHint){
+  const ov = document.getElementById('analysisOverlay');
+  if (!ov) return;
+  ov.style.display = 'flex';
+  window._c1AnalysisGame = game;
+  const an = c1AnalysisState();
+  an.game = game;
+  an.scores = [];
+  an.ready = false;
+  an.running = false;
+  an.cursor = 0;
+  an.maxMove = (game.moves && game.moves.length) ? game.moves.length : 0;
+
+  document.getElementById('analysisTitle').textContent = 'آنالیز — ' + c1ResultLabel(game.result);
+  document.getElementById('analysisSub').textContent =
+    (game.date || '') + ' · ' + an.maxMove + ' نیم‌حرکت';
+
+  const ol = document.getElementById('analysisMoves');
+  ol.innerHTML = '';
+  (game.moves || []).forEach((m, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<span>' + (Math.floor(i/2)+1) + (i%2===0?'. ':'... ') + (m.san || m.uci) +
+      '</span><span class="ev" data-i="'+i+'">…</span>';
+    li.addEventListener('click', () => {
+      if (an.scores[i + 1] != null) c1ShowAnalysisAt(i + 1);
+    });
+    ol.appendChild(li);
+  });
+
+  const fill = document.getElementById('analysisProgressFill');
+  if (fill) fill.style.width = '0%';
+  c1SetEvalBar('0.00');
+  c1UpdateNavUI();
+  c1RenderRecentList();
+
+  // auto-run analysis in background
+  c1RunAnalysis();
 }
 
 function c1RunAnalysis(){
-  const game = window._c1AnalysisGame;
-  if(!game || !game.moves || !game.moves.length){
-    alert('حرکتی برای آنالیز نیست.');
+  const an = c1AnalysisState();
+  const game = an.game || window._c1AnalysisGame;
+  if (!game || !game.moves || !game.moves.length) {
+    const st = document.getElementById('analysisStatusText');
+    if (st) st.textContent = 'حرکتی برای آنالیز نیست';
     return;
   }
+  if (an.running) return;
+  an.running = true;
+  an.ready = false;
+  an.scores = new Array(an.maxMove + 1).fill(null);
+
   c1InitStockfish();
-  const sub = document.getElementById('analysisSub');
   const runBtn = document.getElementById('analysisRunBtn');
-  if(runBtn) runBtn.disabled = true;
-  if(sub) sub.textContent = 'در حال آنالیز با Stockfish…';
+  if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'در حال آنالیز…'; }
+  const statusText = document.getElementById('analysisStatusText');
+  const statusDot = document.getElementById('analysisStatusDot');
+  if (statusDot) { statusDot.className = 'analysis-status-dot busy'; }
+  if (statusText) statusText.textContent = 'آنالیز در پس‌زمینه…';
 
   let st = c1NewState();
   const positions = [{ fen: c1ToFen(st) }];
-  for(const m of game.moves){
+  for (const m of game.moves) {
     const parsed = c1ParseUci(m.uci);
-    if(!parsed) break;
-    if(m.uci.length >= 5 && !parsed.to.promotionType){
+    if (!parsed) break;
+    if (m.uci.length >= 5 && !parsed.to.promotionType) {
       const pr = m.uci[4].toUpperCase();
-      if('QRBN'.includes(pr)) parsed.to.promotionType = pr;
+      if ('QRBN'.includes(pr)) parsed.to.promotionType = pr;
     }
     const legal = c1LegalMoves(st, parsed.from.r, parsed.from.c);
-    let ok = legal.find(x => x.r===parsed.to.r && x.c===parsed.to.c &&
-      (!parsed.to.promotionType || x.promotionType===parsed.to.promotionType));
-    if(!ok) ok = legal.find(x => x.r===parsed.to.r && x.c===parsed.to.c);
-    if(!ok) break;
+    let ok = legal.find(x => x.r === parsed.to.r && x.c === parsed.to.c &&
+      (!parsed.to.promotionType || x.promotionType === parsed.to.promotionType));
+    if (!ok) ok = legal.find(x => x.r === parsed.to.r && x.c === parsed.to.c);
+    if (!ok) break;
     const to = Object.assign({}, ok);
-    if(parsed.to.promotionType) to.promotionType = parsed.to.promotionType;
+    if (parsed.to.promotionType) to.promotionType = parsed.to.promotionType;
     c1MakeMove(st, parsed.from, to);
     positions.push({ fen: c1ToFen(st) });
   }
 
-  let idx = 1;
-  const scores = [];
+  const total = positions.length;
+  const fill = document.getElementById('analysisProgressFill');
+  let idx = 0;
+
+  function finishAll(){
+    an.running = false;
+    an.ready = true;
+    if (statusDot) statusDot.className = 'analysis-status-dot done';
+    if (statusText) statusText.textContent = 'آنالیز آماده · از دید شما (' + (c1Perspective()==='w'?'سفید':'سیاه') + ')';
+    if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'آنالیز دوباره'; }
+    if (fill) fill.style.width = '100%';
+    // show current cursor (start or last viewed)
+    c1ShowAnalysisAt(an.cursor);
+  }
+
   function step(){
-    if(idx >= positions.length){
-      const lis = document.querySelectorAll('#analysisMoves li');
-      scores.forEach((sc, i) => {
-        const el = lis[i] && lis[i].querySelector('.ev');
-        if(!el) return;
-        el.textContent = sc;
-        const n = parseFloat(sc);
-        if(!isNaN(n)){
-          if(n <= -1.0) lis[i].classList.add('bad');
-          else if(n >= 1.0) lis[i].classList.add('good');
-        }
-      });
-      if(sub) sub.textContent = 'آنالیز کامل شد · ارزیابی از دید سفید';
-      if(runBtn) runBtn.disabled = false;
-      return;
-    }
-    if(sub) sub.textContent = 'آنالیز حرکت ' + idx + ' / ' + (positions.length-1) + '…';
+    if (idx >= total) { finishAll(); return; }
+    if (statusText) statusText.textContent = 'آنالیز پس‌زمینه ' + (idx + 1) + ' / ' + total;
+    if (fill) fill.style.width = Math.round(idx / total * 100) + '%';
     c1SfAnalyzeFen(positions[idx].fen, (info) => {
-      scores.push(info || '—');
+      const sc = info || '0.00';
+      an.scores[idx] = sc;
+      // update move list eval text (for moves after start)
+      if (idx > 0) {
+        const li = document.querySelectorAll('#analysisMoves li')[idx - 1];
+        if (li) {
+          const el = li.querySelector('.ev');
+          const shown = c1ScoreForPerspective(sc);
+          if (el) el.textContent = shown;
+          li.classList.add('analyzed');
+          const n = parseFloat(shown);
+          if (!isNaN(n)) {
+            if (n <= -1.0) li.classList.add('bad');
+            else if (n >= 1.0) li.classList.add('good');
+          }
+        }
+      }
+      // if user is currently on this position, refresh bar
+      if (an.cursor === idx) c1SetEvalBar(sc);
       idx++;
-      setTimeout(step, 40);
+      setTimeout(step, 50);
     });
   }
+
   let tries = 0;
   (function wait(){
-    if(c1SfReady || tries++ > 60) step();
-    else { c1InitStockfish(); setTimeout(wait, 120); }
+    if (c1SfReady || tries++ > 80) step();
+    else { c1InitStockfish(); setTimeout(wait, 100); }
   })();
 }
 
@@ -6462,7 +7749,7 @@ function c1SfAnalyzeFen(fen, cb){
   try {
     c1SfWorker.postMessage('ucinewgame');
     c1SfWorker.postMessage('position fen ' + fen);
-    c1SfWorker.postMessage('go depth 12 movetime 400');
+    c1SfWorker.postMessage('go depth 14 movetime 280');
   } catch(err){ finish(null); return; }
   setTimeout(() => {
     if(!done){
@@ -6476,7 +7763,32 @@ function c1SfAnalyzeFen(fen, cb){
   const close = document.getElementById('analysisCloseBtn');
   if(close) close.addEventListener('click', c1CloseAnalysis);
   const run = document.getElementById('analysisRunBtn');
-  if(run) run.addEventListener('click', c1RunAnalysis);
+  if(run) run.addEventListener('click', () => {
+    const an = c1AnalysisState();
+    an.running = false;
+    c1RunAnalysis();
+  });
+  const prev = document.getElementById('analysisPrevBtn');
+  const next = document.getElementById('analysisNextBtn');
+  if (prev) prev.addEventListener('click', () => {
+    const an = c1AnalysisState();
+    c1ShowAnalysisAt(an.cursor - 1);
+  });
+  if (next) next.addEventListener('click', () => {
+    const an = c1AnalysisState();
+    c1ShowAnalysisAt(an.cursor + 1);
+  });
+  // keyboard arrows when overlay open
+  document.addEventListener('keydown', (e) => {
+    const ov = document.getElementById('analysisOverlay');
+    if (!ov || ov.style.display === 'none') return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const an = c1AnalysisState();
+      if (e.key === 'ArrowLeft') c1ShowAnalysisAt(an.cursor - 1);
+      else c1ShowAnalysisAt(an.cursor + 1);
+    }
+  });
   const an = document.getElementById('analyze1v1Btn');
   if(an) an.addEventListener('click', () => {
     if(s1.moveLog && s1.moveLog.length){
@@ -6515,7 +7827,7 @@ function applyTheme(name){
 // wire UI
 (function wire1v1(){
   const card=document.getElementById('cardPlay1v1');
-  if(card) card.addEventListener('click', ()=>{ c1InitStockfish(); showView('setup1v1View'); });
+  if(card) card.addEventListener('click', ()=>{ s1ActiveBot=null; c1InitStockfish(); showView('setup1v1View'); });
   const backS=document.getElementById('backFrom1v1SetupBtn');
   if(backS) backS.addEventListener('click', ()=>showView('homeView'));
   const backG=document.getElementById('backFrom1v1GameBtn');
@@ -6531,8 +7843,11 @@ function applyTheme(name){
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('#mode1v1Picker .seg-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      const col=document.getElementById('color1v1Section');
-      if(col) col.style.display = btn.dataset.mode==='hva' ? '' : 'none';
+      const isHva = btn.dataset.mode === 'hva';
+      const col = document.getElementById('color1v1Section');
+      const aiSec = document.getElementById('ai1v1Section');
+      if (col) col.style.display = isHva ? '' : 'none';
+      if (aiSec) aiSec.style.display = isHva ? '' : 'none';
     });
   });
   document.querySelectorAll('#color1v1Picker .seg-btn').forEach(btn=>{
