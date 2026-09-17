@@ -806,14 +806,17 @@
   .board-scroll{
     width:100%;
     max-width:100%;
-    overflow-x:auto;
-    overflow-y:visible;
+    overflow: auto !important;
     padding:8px;
     box-sizing:border-box;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    display:block;
+    text-align: center;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+  .board-scroll .board-coords{
+    display: inline-grid;
+    margin: 0 auto;
   }
   .board-coords{
     direction: ltr;
@@ -859,28 +862,32 @@
   .board-coords.coords-4p{ --nfiles: 16; }
   .board-coords.coords-1v1{ --nfiles: 8; }
 
-  /* 4p board is 16×8 → aspect ratio 2:1 so each cell stays square */
+  /* 4p board 16×8 — fixed square cells (never collapses on mobile) */
   .chess-board{
+    --cell: 42px;
     direction: ltr;
     display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    aspect-ratio: 16 / 8;
-    width: min(96vw - 36px, 900px);
-    max-width: 100%;
-    height: auto;
+    grid-template-columns: repeat(16, var(--cell));
+    grid-template-rows: repeat(8, var(--cell));
+    width: calc(16 * var(--cell));
+    height: calc(8 * var(--cell));
+    min-width: calc(16 * var(--cell));
+    min-height: calc(8 * var(--cell));
+    max-width: none;
+    aspect-ratio: auto;
     border: 2px solid var(--panel-border);
     border-radius: 4px;
     overflow: hidden;
     background: var(--sq-dark);
     margin: 0 auto;
     box-sizing: border-box;
+    flex-shrink: 0;
   }
   .chess-board .cell{
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
+    width: var(--cell);
+    height: var(--cell);
+    min-width: var(--cell);
+    min-height: var(--cell);
     box-sizing: border-box;
   }
 
@@ -2163,42 +2170,184 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
   /* Portrait phone: keep full width, scroll if needed */
   @media (max-width: 720px) and (orientation: portrait){
     .chess-board{
-      width: min(96vw - 12px, 100%) !important;
-      max-width: none !important;
+      --cell: clamp(28px, calc((100vw - 24px) / 16), 40px);
     }
-    .piece{ font-size: clamp(11px, 4.2vw, 22px) !important; }
+    .piece{ font-size: calc(var(--cell) * 0.75) !important; }
     #gameView .team-panel{ padding: 6px 8px; }
     #gameView .player-badge{ min-width: 0; flex: 1 1 40%; }
   }
 
-  /* Landscape phone: fit height, allow horizontal scroll + zoom */
   @media (max-width: 1000px) and (orientation: landscape){
-    #gameView.app, #gameView.view{
-      max-height: 100dvh;
-      overflow: hidden;
+    #gameView{
+      padding: 4px 6px !important;
     }
     #gameView .layout{
-      max-height: 100dvh;
-      overflow: hidden;
+      gap: 6px !important;
+    }
+    /* Hide bulky chrome so board gets height */
+    #gameView .sidebar{ display: none !important; }
+    #gameView h1, #gameView .subtitle, #gameView .message-bar{
+      display: none !important;
+    }
+    #gameView .team-panel{
+      padding: 3px 8px !important;
+      font-size: 11px !important;
+      max-width: 100%;
+    }
+    #gameView .player-badge{
+      min-width: 0 !important;
+      padding: 4px 6px !important;
+      font-size: 11px !important;
     }
     #gameView .board-scroll{
-      max-height: calc(100dvh - 120px);
       overflow: auto !important;
-      padding: 4px;
+      padding: 2px;
     }
     .chess-board{
-      /* 16:8 board — size by viewport height so cells stay usable */
-      width: min(calc((100dvh - 140px) * 2), 96vw) !important;
-      max-width: none !important;
+      --cell: min(40px, calc((100dvh - 64px) / 8), calc((100vw - 20px) / 16));
     }
-    .piece{ font-size: clamp(12px, 4.5vh, 28px) !important; }
-    #gameView .sidebar{ display: none; } /* more room for board */
-    #gameView .team-panel{ padding: 4px 8px; font-size: 12px; }
+    .piece{
+      font-size: calc(var(--cell) * 0.78) !important;
+    }
+    .board-zoom-bar{
+      margin: 2px 0 !important;
+    }
+    .board-zoom-bar button{
+      width: 30px; height: 30px; font-size: 16px;
+    }
   }
 
-  /* Scaled board via JS zoom */
+  /* Short phones landscape */
+  @media (max-width: 1000px) and (orientation: landscape) and (max-height: 400px){
+    .chess-board{ --cell: clamp(22px, calc((100dvh - 72px) / 8), 34px); }
+    #gameView .team-panel{ display: none; } /* extreme: board only */
+  }
+
   .board-coords.coords-4p{
-    transform-origin: top center;
+    transform: none !important; /* zoom via --cell, not scale */
+    width: max-content;
+    max-width: none;
+  }
+
+
+  @media (min-width: 1100px){
+    .chess-board{ --cell: 48px; }
+  }
+  @media (min-width: 1400px){
+    .chess-board{ --cell: 52px; }
+  }
+
+  /* Hide leftover rule notes during play */
+  #gameView footer.note,
+  #gameView .note{ display: none !important; }
+
+  /* Ensure full 8 ranks visible / scrollable — never clip last row */
+  #gameView .board-scroll{
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px !important;
+    max-height: none;
+  }
+  #gameView .chess-board{
+    overflow: visible !important;
+  }
+  #gameView .board-coords.coords-4p{
+    padding-bottom: 4px;
+  }
+
+  @media (max-width: 1000px) and (orientation: landscape){
+    #gameView{
+      padding: 2px 4px !important;
+      overflow: hidden !important;
+      height: 100dvh;
+      max-height: 100dvh;
+      box-sizing: border-box;
+    }
+    #gameView header.top{ display: none !important; }
+    #gameView .team-panel{ display: none !important; }
+    #gameView .sidebar{ display: none !important; }
+    #gameView .back-btn-ingame{
+      position: fixed; top: 4px; left: 4px; z-index: 20;
+      font-size: 11px; padding: 4px 8px;
+    }
+    #gameView .layout, #gameView .center-col{
+      height: 100%;
+      max-height: 100dvh;
+      gap: 4px !important;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    #gameView .status-bar{
+      flex-shrink: 0;
+      padding: 2px 4px !important;
+    }
+    #gameView .status-bar .message-bar,
+    #gameView .premove-banner{
+      font-size: 11px !important;
+      line-height: 1.25;
+    }
+    #gameView .board-scroll{
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none !important;
+      overflow: auto !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      padding: 4px !important;
+    }
+    /* Fit BOTH width and height so no rank is clipped */
+    #gameView .chess-board{
+      --cell: min(
+        40px,
+        calc((100dvh - 64px) / 8),
+        calc((100vw - 20px) / 16)
+      ) !important;
+    }
+    #gameView .piece{
+      font-size: calc(var(--cell) * 0.78) !important;
+    }
+    #gameView .board-zoom-bar{ display: none !important; }
+  }
+
+  @media (max-width: 720px) and (orientation: portrait){
+    #gameView header.top h1{ font-size: 16px; margin: 4px 0; }
+    #gameView .board-scroll{
+      max-height: calc(100dvh - 180px);
+      overflow: auto !important;
+      padding-bottom: 24px !important;
+    }
+    #gameView .chess-board{
+      --cell: min(36px, calc((100vw - 20px) / 16)) !important;
+    }
+  }
+
+
+  .analysis-stats{
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 8px 0 12px;
+    flex-wrap: wrap;
+  }
+  .analysis-stats .astat{
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    text-align: center;
+    min-width: 88px;
+  }
+  .analysis-stats .astat span{
+    display: block;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--text);
+  }
+  .analysis-stats .astat small{
+    font-size: 11px;
+    color: var(--text-muted);
   }
 
 </style>
@@ -2541,6 +2690,11 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
   <div class="analysis-modal">
     <h3 id="analysisTitle">آنالیز بازی</h3>
     <div class="analysis-sub" id="analysisSub"></div>
+    <div class="analysis-stats" id="analysisStats" style="display:none">
+      <div class="astat"><span id="anAccuracy">—</span><small>دقت</small></div>
+      <div class="astat"><span id="anRating">—</span><small>ریتینگ تقریبی</small></div>
+      <div class="astat"><span id="anACPL">—</span><small>میانگین CPL</small></div>
+    </div>
     <div class="analysis-body">
       <div class="analysis-main">
         <div class="analysis-nav">
@@ -2740,8 +2894,7 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
 
 
   <header class="top">
-    <h1>شطرنج ۴ نفره — 16×8 Prototype</h1>
-    <p>Team Blue: Player A · Player B &nbsp;|&nbsp; Team Red: Player C · Player D — یک تیم فقط زمانی می‌بازد که هر دو شاهش مات شوند.</p>
+    <h1>شطرنج ۴ نفره · ۲v۲</h1>
   </header>
 
   <div class="layout">
@@ -2809,10 +2962,7 @@ html[data-theme="ivory"] .piece-1v1.black{ color:#1a1a1a !important; filter: dro
         </div>
       </div>
 
-      <footer class="note">
-        قانون کلیدی: شاه مستقیماً گرفته نمی‌شود؛ اگر در کیش هیچ حرکت قانونی برای فرار نداشته باشد، مات می‌شود و از صفحه حذف می‌گردد.
-        بازیکنِ مات‌شده حذف نمی‌شود و وارد حالت GUARDIAN می‌شود: محافظت از شاه هم‌تیمی و حمله به دشمن. تیم فقط وقتی می‌بازد که هر دو شاهش مات شده باشند.
-      </footer>
+
     </div>
 
     <div class="sidebar">
@@ -8717,6 +8867,101 @@ function c1OpenAnalysis(game, autoHint){
   c1RunAnalysis();
 }
 
+
+function c1ParseEvalCp(s){
+  if (s == null || s === '') return null;
+  const str = String(s).trim();
+  // Mate scores: cap so one mate swing does not destroy whole-game ACPL
+  if (/M/i.test(str)) {
+    const neg = /^-/.test(str) || /-M/i.test(str);
+    return neg ? -600 : 600; // treat as ±6.00 pawns for accuracy only
+  }
+  const n = parseFloat(str);
+  if (isNaN(n)) return null;
+  // clamp extreme evals (±15 pawns) for stability
+  const cp = Math.max(-1500, Math.min(1500, n * 100));
+  return cp;
+}
+
+/** Win% from CP (Lichess-ish logistic) */
+function c1WinProb(cp){
+  return 1 / (1 + Math.exp(-0.00368212 * cp));
+}
+
+/** Accuracy + estimated rating for the human side from SF scores[] */
+function c1ComputeGameStats(scores, humanColor){
+  if (!scores || scores.length < 2) return null;
+  const losses = [];
+  const moveAcc = [];
+  for (let i = 1; i < scores.length; i++) {
+    const movedByWhite = (i % 2 === 1);
+    const isHuman = (humanColor === 'w' && movedByWhite) || (humanColor === 'b' && !movedByWhite);
+    if (!isHuman) continue;
+    const before = c1ParseEvalCp(scores[i - 1]);
+    const after = c1ParseEvalCp(scores[i]);
+    if (before == null || after == null) continue;
+    const beforeH = humanColor === 'w' ? before : -before;
+    const afterH = humanColor === 'w' ? after : -after;
+    // Cap single-move loss (blunder ceiling) — one bad move ≠ 5% game accuracy
+    const rawLoss = Math.max(0, beforeH - afterH);
+    const loss = Math.min(rawLoss, 300); // max 3 pawns count toward ACPL
+    losses.push(loss);
+    // Per-move accuracy from win-probability drop (more forgiving)
+    const wp0 = c1WinProb(beforeH);
+    const wp1 = c1WinProb(afterH);
+    const drop = Math.max(0, wp0 - wp1);
+    // 0 drop → ~100%, 0.3 drop → ~55%, 0.5+ → low but not 5%
+    const ma = Math.max(20, Math.min(100, 100 - drop * 120));
+    moveAcc.push(ma);
+  }
+  if (!losses.length) return null;
+  const acpl = losses.reduce((a, b) => a + b, 0) / losses.length;
+  // Average of per-move accuracies (chess.com style aggregation)
+  let accuracy = moveAcc.reduce((a, b) => a + b, 0) / moveAcc.length;
+  // Soften with ACPL hybrid so long games stay stable
+  const accFromAcpl = Math.max(25, Math.min(99, 103.5 * Math.exp(-0.028 * acpl) - 3.5));
+  accuracy = 0.55 * accuracy + 0.45 * accFromAcpl;
+  accuracy = Math.max(25, Math.min(99.5, accuracy));
+
+  // Rating bands from ACPL (more generous)
+  let rating;
+  if (acpl <= 20) rating = 2300;
+  else if (acpl <= 30) rating = 2100;
+  else if (acpl <= 40) rating = 1900;
+  else if (acpl <= 55) rating = 1700;
+  else if (acpl <= 75) rating = 1500;
+  else if (acpl <= 100) rating = 1300;
+  else if (acpl <= 130) rating = 1100;
+  else if (acpl <= 170) rating = 900;
+  else rating = 750;
+  rating = Math.round(rating - Math.min(80, (acpl - 20) * 0.25));
+  rating = Math.max(500, Math.min(2600, rating));
+  return {
+    accuracy: accuracy.toFixed(1) + '%',
+    rating: String(rating),
+    acpl: acpl.toFixed(0)
+  };
+}
+
+function c1ShowAnalysisStats(){
+  const an = c1AnalysisState();
+  const box = document.getElementById('analysisStats');
+  if (!box) return;
+  const human = (typeof s1HumanColor === 'string') ? s1HumanColor : 'w';
+  const st = c1ComputeGameStats(an.scores, human);
+  if (!st) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'flex';
+  const a = document.getElementById('anAccuracy');
+  const r = document.getElementById('anRating');
+  const c = document.getElementById('anACPL');
+  if (a) a.textContent = st.accuracy;
+  if (r) r.textContent = st.rating;
+  if (c) c.textContent = st.acpl;
+}
+
 function c1RunAnalysis(){
   const an = c1AnalysisState();
   const game = an.game || window._c1AnalysisGame;
@@ -8779,7 +9024,7 @@ function c1RunAnalysis(){
     if (statusText) statusText.textContent = 'آنالیز آماده · از دید شما (' + (c1Perspective()==='w'?'سفید':'سیاه') + ')';
     if (runBtn) { runBtn.disabled = false; runBtn.textContent = 'آنالیز دوباره'; }
     if (fill) fill.style.width = '100%';
-    // show current cursor (start or last viewed)
+    try { c1ShowAnalysisStats(); } catch (e) { console.warn(e); }
     c1ShowAnalysisAt(an.cursor);
   }
 
@@ -9136,18 +9381,18 @@ function renderThemesGrid(){
 
 // 4p board zoom (mobile)
 (function wireBoardZoom(){
-  let scale = 1;
-  const min = 0.55, max = 1.8, step = 0.15;
+  let cell = 34; // px
+  const min = 22, max = 52, step = 4;
   function apply(){
-    const coords = document.querySelector('#gameView .board-coords.coords-4p');
+    const board = document.querySelector('#gameView .chess-board');
     const label = document.getElementById('boardZoomLabel');
-    if (coords) coords.style.transform = 'scale(' + scale + ')';
-    if (label) label.textContent = Math.round(scale * 100) + '%';
+    if (board) board.style.setProperty('--cell', cell + 'px');
+    if (label) label.textContent = cell + 'px';
   }
   const out = document.getElementById('boardZoomOut');
   const inn = document.getElementById('boardZoomIn');
-  if (out) out.addEventListener('click', () => { scale = Math.max(min, scale - step); apply(); });
-  if (inn) inn.addEventListener('click', () => { scale = Math.min(max, scale + step); apply(); });
+  if (out) out.addEventListener('click', () => { cell = Math.max(min, cell - step); apply(); });
+  if (inn) inn.addEventListener('click', () => { cell = Math.min(max, cell + step); apply(); });
 })();
 
 (function wire1v1(){
