@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="midnight">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شطرنج — بازی کن</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+
+
+<div id="profileView" class="view" style="display:none">
+  <div class="setup-wrap settings-wrap">
+    <button class="back-btn" id="backFromProfileBtn" type="button">→ بازگشت</button>
+    <h2 class="setup-title" id="profilePageTitle">پروفایل</h2>
+    <div class="profile-hero settings-card">
+      <div class="profile-hero-avatar">
+        <span id="profileViewEmoji">♟</span>
+        <img id="profileViewImg" alt="" style="display:none">
+      </div>
+      <div>
+        <div class="profile-hero-name" id="profileViewName">مهمان</div>
+        <div class="profile-hero-user" id="profileViewUser">@guest</div>
+      </div>
+    </div>
+    <div class="profile-stats-grid">
+      <div class="settings-card profile-stat"><span id="profileViewGames">0</span><small id="profileStatGamesLabel">بازی</small></div>
+      <div class="settings-card profile-stat"><span id="profileViewWins">0</span><small id="profileStatWinsLabel">برد</small></div>
+      <div class="settings-card profile-stat"><span id="profileViewRating">—</span><small id="profileStatRatingLabel">ریتینگ</small></div>
+      <div class="settings-card profile-stat"><span id="profileViewWinRate">—</span><small id="profileStatWinRateLabel">نرخ برد</small></div>
+    </div>
+    <h3 id="profileRecentTitle" class="home-recent-title">بازی‌های اخیر</h3>
+    <ul class="home-recent-list" id="profileViewRecent"></ul>
+  </div>
+</div>
+
+<div id="settingsView" class="view" style="display:none">
+  <div class="setup-wrap settings-wrap">
+    <button class="back-btn" id="backFromSettingsBtn" type="button">→ بازگشت</button>
+    <h2 class="setup-title" id="settingsPageTitle">تنظیمات</h2>
+
+    <div class="settings-stack">
+      <div class="settings-card cc-card">
+        <div class="settings-card-icon">🌐</div>
+        <div class="settings-card-body">
+          <div class="settings-row-title" id="settingsLangLabel">زبان</div>
+          <div class="settings-row-hint" id="settingsLangHint">Language of the interface</div>
+        </div>
+        <div class="settings-seg">
+          <button type="button" class="settings-seg-btn active" id="settingsLangFa" onclick="window.setAppLang&&window.setAppLang('fa')">Persian</button>
+          <button type="button" class="settings-seg-btn" id="settingsLangEn" onclick="window.setAppLang&&window.setAppLang('en')">English</button>
+        </div>
+      </div>
+
+      <div class="settings-card cc-card">
+        <div class="settings-card-icon">⏩</div>
+        <div class="settings-card-body">
+          <div class="settings-row-title" id="settingsPremLabel">پیش‌حرکت (Premove)</div>
+          <div class="settings-row-hint" id="settingsPremHint">صف کردن حرکت قبل از نوبت</div>
+        </div>
+        <button type="button" class="settings-toggle" id="settingsPremoveBtn">روشن</button>
+      </div>
+
+      <div class="settings-card cc-card">
+        <div class="settings-card-icon">🔊</div>
+        <div class="settings-card-body">
+          <div class="settings-row-title" id="settingsSoundLabel">صدا</div>
+          <div class="settings-row-hint" id="settingsSoundHint">صدای حرکت و پایان بازی</div>
+        </div>
+        <button type="button" class="settings-toggle" id="settingsSoundBtn">روشن</button>
+      </div>
+
+      <div class="settings-card cc-card settings-card-clickable" id="settingsThemesCard">
+        <div class="settings-card-icon">🎨</div>
+        <div class="settings-card-body">
+          <div class="settings-row-title" id="settingsThemesLabel">تم ظاهری</div>
+          <div class="settings-row-hint" id="settingsThemesHint">رنگ صفحه و مهره‌ها</div>
+        </div>
+        <button type="button" class="settings-go" id="settingsOpenThemesBtn">باز کردن</button>
+      </div>
+
+      <div class="settings-card cc-card">
+        <div class="settings-card-icon">🗑️</div>
+        <div class="settings-card-body">
+          <div class="settings-row-title" id="settingsClearLabel">پاک‌سازی داده محلی</div>
+          <div class="settings-row-hint" id="settingsClearHint">پروفایل، بازی‌های اخیر و تنظیمات</div>
+        </div>
+        <button type="button" class="settings-go" id="settingsClearBtn">پاک‌سازی داده محلی</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="themesView" class="view" style="display:none">
+  <div class="setup-wrap themes-wrap">
+    <button class="back-btn" id="backFromThemesBtn" type="button" data-i18n="back">→ بازگشت</button>
+    <h2 class="setup-title" data-i18n="themes">تم‌ها</h2>
+    <p class="setup-note" data-i18n="themesNote" style="display:block!important">یک تم انتخاب کنید.</p>
+    <div class="themes-grid" id="themesGrid">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<div id="homeView" class="view">
+  <div class="home-shell">
+    <main class="home-main">
+      <header class="cc-topbar">
+        <div class="cc-brand">
+          <span class="cc-logo" aria-hidden="true">♜</span>
+          <div>
+            <div class="cc-brand-name">شطرنج</div>
+            <div class="cc-brand-sub">خانه · بازی کن</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="cc-hero">
+        <h1 class="cc-hero-title">بازی کن</h1>
+        <p class="cc-hero-desc" style="display:none"></p>
+      </section>
+
+      <!-- Featured 2v2 -->
+      <button class="mode-card cc-card cc-card-primary cc-featured" id="cardPlayBot" type="button">
+        <div class="cc-card-top">
+          <span class="mode-card-icon">♟️</span>
+          <span class="cc-pill" data-i18n="suggested">پیشنهادی</span>
+        </div>
+        <div class="mode-card-title" data-i18n="play2v2">شطرنج ۴ نفره · ۲v۲</div>
+        <div class="mode-card-desc" data-i18n="desc2v2">تخته ۱۶×۸ · حالت Guardian · تیم آبی در برابر قرمز</div>
+        <span class="cc-cta" data-i18n="ctaPlay">همین حالا بازی کن</span>
+      </button>
+
+      <section class="cc-play-grid mode-cards">
+        <button class="mode-card cc-card" id="cardPlay1v1" type="button">
+          <div class="cc-card-top"><span class="mode-card-icon">♞</span></div>
+          <div class="mode-card-title" data-i18n="play1v1">شطرنج ۱v۱</div>
+          <div class="mode-card-desc" data-i18n="desc1v1">کلاسیک ۸×۸ · انسان یا ربات</div>
+          <span class="cc-cta cc-cta-ghost" data-i18n="ctaStart">شروع</span>
+        </button>
+
+        <button class="mode-card cc-card" id="cardPlayBotsHub" type="button">
+          <div class="cc-card-top"><span class="mode-card-icon">🤖</span></div>
+          <div class="mode-card-title" data-i18n="bots">بازی با ربات‌ها</div>
+          <div class="mode-card-desc" data-i18n="descBots">مارتین، آریا، استاد نوری…</div>
+          <span class="cc-cta cc-cta-ghost" data-i18n="ctaPick">انتخاب</span>
+        </button>
+
+        <button class="mode-card cc-card" id="cardPlayOnline" type="button">
+          <div class="cc-card-top"><span class="mode-card-icon">🌐</span></div>
+          <div class="mode-card-title" data-i18n="online">آنلاین</div>
+          <div class="mode-card-desc" data-i18n="descOnline">اتاق بساز یا با کد بپیوند</div>
+          <span class="cc-cta cc-cta-ghost" data-i18n="ctaRoom">اتاق</span>
+        </button>
+
+        <button class="mode-card cc-card" id="cardGameModes" type="button">
+          <div class="cc-card-top"><span class="mode-card-icon">⚙️</span></div>
+          <div class="mode-card-title" data-i18n="modes">گیم‌مودها</div>
+          <div class="mode-card-desc" data-i18n="descModes">۱v۱ یا ۲v۲ قبل از بازی</div>
+          <span class="cc-cta cc-cta-ghost" data-i18n="ctaSetup">تنظیم</span>
+        </button>
+
+        <button class="mode-card cc-card disabled" id="cardVariants" type="button" disabled>
+          <div class="cc-card-top">
+            <span class="mode-card-icon">✨</span>
+            <span class="mode-card-badge" data-i18n="soon">به‌زودی</span>
+          </div>
+          <div class="mode-card-title" data-i18n="variants">واریانت‌ها</div>
+          <div class="mode-card-desc" data-i18n="descVariants">در دست تولید</div>
+        </button>
+      </section>
+
+      <section class="home-recent" id="homeRecent">
+        <h3 id="homeRecentTitle">بازی‌های اخیر</h3>
+        <ul class="home-recent-list" id="homeRecentList"></ul>
+      </section>
+    </main>
+
+    <aside class="home-rail">
+      <!-- Account card (chess.com-style profile strip) -->
+      <div class="rail-card account-card" id="accountCard">
+        <div class="acc-head">
+          <button type="button" class="acc-avatar" id="accAvatarBtn" title="تغییر آواتار">
+            <span id="accAvatarEmoji">♟</span>
+            <img id="accAvatarImg" alt="" style="display:none">
+          </button>
+          <div class="acc-meta">
+            <div class="acc-name" id="accDisplayName">مهمان</div>
+            <div class="acc-user" id="accUsername">@guest</div>
+          </div>
+        </div>
+        <div class="acc-stats">
+          <div class="acc-stat"><span id="accGames">0</span><small>بازی</small></div>
+          <div class="acc-stat"><span id="accWins">0</span><small>برد</small></div>
+          <div class="acc-stat"><span id="accRating">—</span><small>ریتینگ</small></div>
+        </div>
+        <button type="button" class="acc-edit-btn" id="accEditBtn">ویرایش پروفایل</button>
+      </div>
+
+      <div class="rail-card rail-card-compact">
+        <button type="button" class="rail-nav-btn" id="openSettingsBtn" onclick="try{window.openSettings&&window.openSettings()}catch(e){console.error(e)}">
+          <span class="rail-nav-icon">⚙️</span>
+          <span id="openSettingsLabel">تنظیمات</span>
+          <span class="rail-nav-chevron">‹</span>
+        </button>
+      </div>
+
+
+      <div class="rail-card rail-card-compact">
+        <a class="tg-link tg-link-compact" href="https://t.me/tenmanogod" target="_blank" rel="noopener noreferrer">
+          <span class="tg-icon tg-icon-sm" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.37-.94-2.22-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.36-1.36 3.74-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06-.01.24 0 .38z"/></svg>
+          </span>
+          <span class="tg-id">@tenmanogod</span>
+        </a>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div id="botsHubView" class="view" style="display:none">
+  <div class="setup-wrap" style="max-width:720px">
+    <button class="back-btn" id="backFromBotsHubBtn" type="button" data-i18n="back">→ بازگشت</button>
+    <h2 class="setup-title" data-i18n="bots">بازی با ربات‌ها</h2>
+    <p class="setup-note" data-i18n="botsNote" style="display:block!important">یک حریف انتخاب کن. هر ربات سطح و سبک خودش را دارد.</p>
+
+    <div class="setup-section">
+      <h3 data-i18n="yourColor">رنگ شما</h3>
+      <div class="segmented segmented-wide" id="botColorPicker">
+        <button class="seg-btn active" data-color="w" type="button" data-i18n="white">سفید</button>
+        <button class="seg-btn" data-color="b" type="button" data-i18n="black">سیاه</button>
+      </div>
+    </div>
+
+    <div class="bot-grid" id="botGrid"></div>
+
+    <div class="setup-section" style="margin-top:18px">
+      <h3 data-i18n="other">سایر</h3>
+      <div class="mode-cards">
+        <button class="mode-card" id="botsHub4p" type="button">
+          <div class="mode-card-icon">♟️</div>
+          <div class="mode-card-title" data-i18n="bots4p">۴ نفره با ربات</div>
+          <div class="mode-card-desc" data-i18n="bots4pDesc">تنظیم Human/AI برای هر بازیکن.</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="gameModesView" class="view" style="display:none">
+  <div class="setup-wrap">
+    <button class="back-btn" id="backFromGameModesBtn" type="button" data-i18n="back">→ بازگشت</button>
+    <h2 class="setup-title" data-i18n="modes">گیم‌مودها</h2>
+    <p class="setup-note" data-i18n="modesNote" style="display:block!important">قبل از بازی، قالب و مود را انتخاب کنید.</p>
+
+    <div class="setup-section">
+      <h3 data-i18n="format">قالب بازی</h3>
+      <div class="segmented segmented-wide" id="gmFormatPicker">
+        <button class="seg-btn active" data-format="1v1" type="button" data-i18n="fmt1v1">۱ به ۱</button>
+        <button class="seg-btn" data-format="2v2" type="button" data-i18n="fmt2v2">۲ به ۲</button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <h3 data-i18n="activeMode">مود فعال</h3>
+      <div class="gm-mode-list" id="gmModeList">
+        <div class="gm-mode-item gm-mode-active">
+          <span class="gm-mode-title">Guardian ✓</span>
+          <span class="gm-mode-desc" data-i18n="guardianActiveDesc">مود فعلی ۲v۲ — وقتی شاه یک بازیکن مات شود، او حذف نمی‌شود و تا پایان بازی مهره‌هایش را کنترل می‌کند؛ تیم فقط وقتی می‌بازد که هر دو شاهش مات شده باشند.</span>
+        </div>
+        <div class="gm-mode-item disabled">
+          <span class="gm-mode-title" data-i18n="standard">استاندارد</span>
+          <span class="gm-mode-desc" data-i18n="standardComingSoon">حذف کامل بازیکن بعد از مات — به‌زودی</span>
+        </div>
+        <div class="gm-mode-item disabled">
+          <span class="gm-mode-title" data-i18n="addonPack">ادآن‌پک</span>
+          <span class="gm-mode-desc" data-i18n="descVariants">در دست تولید</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="start-btn" id="gmContinueBtn" type="button" data-i18n="continueSetup">ادامه و شروع تنظیمات</button>
+  </div>
+</div>
+
+<div id="variantsView" class="view" style="display:none">
+  <div class="setup-wrap">
+    <button class="back-btn" id="backFromVariantsBtn" type="button" data-i18n="back">→ بازگشت</button>
+    <h2 class="setup-title" data-i18n="variants">واریانت‌ها</h2>
+    <div class="panel-box" style="text-align:center;padding:28px 16px;">
+      <div style="font-size:40px;margin-bottom:12px;">✨</div>
+      <p style="color:var(--text);font-weight:600;margin-bottom:8px;" data-i18n="descVariants">در دست تولید</p>
+      <p class="setup-note" data-i18n="variantsNote" style="display:block!important">واریانت‌های جدید اینجا اضافه می‌شوند.</p>
+    </div>
+  </div>
+</div>
+
+<div id="setup1v1View" class="view" style="display:none">
+  <div class="setup-wrap">
+    <button class="back-btn" id="backFrom1v1SetupBtn" type="button" data-i18n="back">→ بازگشت</button>
+    <h2 class="setup-title" data-i18n="play1v1">شطرنج ۱v۱</h2>
+
+    <div class="setup-section">
+      <h3 data-i18n="gameMode">حالت بازی</h3>
+      <div class="segmented segmented-wide" id="mode1v1Picker">
+        <button class="seg-btn active" data-mode="hva" type="button" data-i18n="hva">انسان vs ربات</button>
+        <button class="seg-btn" data-mode="hvh" type="button" data-i18n="hvh">انسان vs انسان</button>
+      </div>
+    </div>
+
+    <div class="setup-section" id="color1v1Section">
+      <h3 data-i18n="yourColor">رنگ شما</h3>
+      <div class="segmented segmented-wide" id="color1v1Picker">
+        <button class="seg-btn active" data-color="w" type="button" data-i18n="white">سفید</button>
+        <button class="seg-btn" data-color="b" type="button" data-i18n="black">سیاه</button>
+      </div>
+    </div>
+
+    <div class="setup-section" id="ai1v1Section">
+      <h3 data-i18n="botLevel">سطح ربات</h3>
+      <select class="ai-select" id="ai1v1Depth">
+        <option value="1" data-i18n="lvEasy">آسان (~1200)</option>
+        <option value="2" selected data-i18n="lvMed">متوسط (~1500)</option>
+        <option value="3" data-i18n="lvHard">سخت (~1800)</option>
+        <option value="4" data-i18n="lvVHard">خیلی سخت (~2100)</option>
+        <option value="5">استاد (~2500+)</option>
+      </select>
+    </div>
+
+    <button class="start-btn" id="start1v1Btn" type="button" data-i18n="startGame">شروع بازی</button>
+  </div>
+</div>
+
+<div class="app view" id="game1v1View" style="display:none">
+  <button class="back-btn back-btn-ingame" id="backFrom1v1GameBtn" type="button" data-i18n="backToMenu">→ بازگشت به منو</button>
+  <header class="top">
+    <h1 id="title1v1" data-i18n="play1v1">شطرنج ۱v۱</h1>
+  </header>
+  <div class="layout">
+    <div class="center-col">
+      <div class="status-bar">
+        <div class="turn-indicator" id="turn1v1" data-i18n-turn="1">نوبت: سفید</div>
+        <div class="message-bar info" id="msg1v1"></div>
+        <div class="premove-banner" id="premoveBanner1v1"></div>
+        <div class="game-over-banner" id="over1v1"></div>
+      </div>
+      <div class="board-zoom-bar" id="boardZoomBar4p">
+        <button type="button" id="boardZoomOut" title="-" data-i18n-title="zoomOut">−</button>
+        <span id="boardZoomLabel" style="font-size:12px;color:var(--text-muted);min-width:3em;text-align:center">100%</span>
+        <button type="button" id="boardZoomIn" title="+" data-i18n-title="zoomIn">+</button>
+      </div>
+      <div class="board-scroll">
+        <div class="board-coords coords-1v1" id="boardCoords1v1">
+          <div class="coord-ranks" id="ranks1v1"></div>
+          <div class="chess-board-1v1" id="board1v1"></div>
+          <div class="coord-files" id="files1v1"></div>
+        </div>
+      </div>
+      <div class="btn-row" style="max-width:420px;width:100%;margin-top:10px;">
+        <button class="action-btn" id="undo1v1Btn" type="button" data-i18n="undo">بازگشت حرکت</button>
+        <button class="action-btn" id="restart1v1Btn" type="button" data-i18n="restart">شروع دوباره</button>
+        <button class="action-btn" id="analyze1v1Btn" type="button" data-i18n="analyze">آنالیز</button>
+        <button class="action-btn danger-btn" id="resign1v1Btn" type="button" data-i18n="resign">تسلیم</button>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="panel-box">
+        <h3 data-i18n="moveHistory">تاریخچه حرکات</h3>
+        <ol class="move-list" id="moves1v1"></ol>
+      </div>
+      <div class="panel-box">
+        <h3 data-i18n="status">وضعیت</h3>
+        <pre class="debug" id="debug1v1"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="promo1v1Overlay" class="promo-1v1-overlay" style="display:none">
+  <div class="promo-1v1-modal">
+    <h3>ارتقا سرباز</h3>
+    <div class="promo-1v1-options" id="promo1v1Options"></div>
+  </div>
+</div>
+
+
+<div id="profileOverlay" class="profile-overlay" style="display:none">
+  <div class="profile-modal">
+    <h3 id="profileModalTitle">حساب کاربری</h3>
+    <p class="profile-note" id="profileModalNote">اطلاعات فقط روی همین دستگاه ذخیره می‌شود.</p>
+    <div class="profile-avatar-row">
+      <div class="profile-avatar-preview" id="profileAvatarPreview">♟</div>
+      <div class="profile-avatar-actions">
+        <label class="profile-file-btn" id="profileFileBtnLabel">
+          انتخاب عکس
+          <input type="file" id="profileAvatarFile" accept="image/*" hidden>
+        </label>
+        <div class="profile-emoji-picks" id="profileEmojiPicks">
+          <button type="button" data-e="♟">♟</button>
+          <button type="button" data-e="♞">♞</button>
+          <button type="button" data-e="♛">♛</button>
+          <button type="button" data-e="♚">♚</button>
+          <button type="button" data-e="🔥">🔥</button>
+          <button type="button" data-e="⭐">⭐</button>
+        </div>
+      </div>
+    </div>
+    <label class="profile-field"><span id="profileLabelName">نام نمایشی</span>
+      <input type="text" id="profileDisplayName" maxlength="24" placeholder="">
+    </label>
+    <label class="profile-field"><span id="profileLabelUser">نام کاربری</span>
+      <input type="text" id="profileUsername" maxlength="20" placeholder="username" dir="ltr">
+    </label>
+    <label class="profile-field"><span id="profileLabelEmail">ایمیل</span>
+      <input type="email" id="profileEmail" maxlength="80" placeholder="you@email.com" dir="ltr">
+    </label>
+    <label class="profile-field"><span id="profileLabelBio">درباره من</span>
+      <textarea id="profileBio" maxlength="160" rows="2" placeholder=""></textarea>
+    </label>
+    <div class="profile-actions">
+      <button type="button" class="primary" id="profileSaveBtn">ذخیره</button>
+      <button type="button" id="profileCancelBtn">انصراف</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="endGameOverlay" class="end-game-overlay" style="display:none" aria-modal="true">
+  <div class="end-game-card">
+    <div class="end-game-emoji" id="endGameEmoji">♔</div>
+    <h2 class="end-game-title" id="endGameTitle">پایان بازی</h2>
+    <p class="end-game-sub" id="endGameSub"></p>
+    <div class="end-game-meta" id="endGameMeta"></div>
+    <div class="end-game-actions">
+      <button type="button" class="start-btn" id="endGameAnalyzeBtn">آنالیز</button>
+      <button type="button" class="action-btn" id="endGameAgainBtn">بازی دوباره</button>
+      <button type="button" class="action-btn" id="endGameHomeBtn">خانه</button>
+    </div>
+  </div>
+</div>
+
+<div id="analysisOverlay" class="analysis-overlay" style="display:none">
+  <div class="analysis-modal analysis-modal-wide">
+    <div class="analysis-header-row">
+      <div>
+        <h3 id="analysisTitle" data-i18n="analysisTitle">آنالیز بازی</h3>
+        <div class="analysis-sub" id="analysisSub"></div>
+      </div>
+      <button type="button" class="analysis-x" id="analysisCloseBtn" title="Close" data-i18n-title="close">×</button>
+    </div>
+
+    <div class="analysis-stats" id="analysisStats" style="display:none">
+      <div class="astat-card you">
+        <div class="astat-label" data-i18n="you">شما</div>
+        <div class="astat-big"><span id="anAccuracy">—</span><small data-i18n="accuracy">دقت</small></div>
+        <div class="astat-big"><span id="anRating">—</span><small data-i18n="rating">ریتینگ</small></div>
+        <div class="astat-mini">CPL <span id="anACPL">—</span></div>
+      </div>
+      <div class="astat-vs">vs</div>
+      <div class="astat-card opp">
+        <div class="astat-label" data-i18n="opponent">حریف</div>
+        <div class="astat-big"><span id="anOppAccuracy">—</span><small data-i18n="accuracy">دقت</small></div>
+        <div class="astat-big"><span id="anOppRating">—</span><small data-i18n="rating">ریتینگ</small></div>
+        <div class="astat-mini">CPL <span id="anOppACPL">—</span></div>
+      </div>
+    </div>
+
+    <div class="analysis-nav">
+      <button type="button" id="analysisPrevBtn" title="Previous" data-i18n-title="prevMove">◀</button>
+      <span class="move-pos" id="analysisMovePos" data-i18n="startPos">شروع</span>
+      <button type="button" id="analysisNextBtn" title="Next" data-i18n-title="nextMove">▶</button>
+    </div>
+
+    <div class="analysis-body analysis-body-row">
+      <div class="analysis-board-col">
+        <div class="analysis-board-with-eval">
+          <div class="eval-bar-wrap eval-bar-beside">
+            <div class="eval-bar-labels-v">
+              <span id="evalLabelTop" data-i18n="opponent">حریف</span>
+              <span class="eval-score" id="evalScoreLabel">0.00</span>
+              <span id="evalLabelBottom" data-i18n="you">شما</span>
+            </div>
+            <div class="eval-bar" id="evalBar">
+              <div class="eval-bar-you" id="evalBarYou"></div>
+              <div class="eval-bar-opp" id="evalBarOpp"></div>
+              <div class="eval-bar-center"></div>
+            </div>
+          </div>
+          <div class="analysis-board-wrap">
+            <div class="analysis-mini-board" id="analysisMiniBoard"></div>
+          </div>
+        </div>
+        <div class="analysis-eval-note" id="analysisEvalNote"></div>
+        <div class="analysis-progress"><span id="analysisProgressFill"></span></div>
+        <p class="analysis-sub" id="analysisEngineStatus" style="margin:4px 0 0;font-size:11px;">
+          <span class="analysis-status-dot" id="analysisStatusDot"></span>
+          <span id="analysisStatusText" data-i18n="ready">آماده</span>
+        </p>
+      </div>
+      <div class="analysis-moves-col">
+        <div class="analysis-moves-title" data-i18n="movesTitle">حرکات</div>
+        <ol class="analysis-moves" id="analysisMoves"></ol>
+      </div>
+    </div>
+
+    <div class="analysis-export" id="analysisExport" style="display:none">
+      <button type="button" class="action-btn" id="downloadPgnBtn" data-i18n="downloadPgn">دانلود PGN</button>
+      <button type="button" class="primary" id="analysisRunBtn" data-i18n="reanalyze">آنالیز دوباره</button>
+    </div>
+
+    <div class="analysis-recent-block">
+      <h4 class="analysis-recent-title" data-i18n="recent">بازی‌های اخیر</h4>
+      <ul class="recent-games-list" id="recentGamesList"></ul>
+    </div>
+  </div>
+</div>
+
+<div id="botSetupView" class="view" style="display:none">
+  <div class="setup-wrap">
+    <button class="back-btn" id="backFromSetupBtn" type="button" data-i18n="back">→ بازگشت</button>
+    <h2 class="setup-title" data-i18n="setup4pTitle">شطرنج ۴ نفره</h2>
+
+    <div class="setup-section">
+      <h3 data-i18n="controlPlayers">کنترل هر بازیکن</h3>
+      <div class="setup-players">
+        <div class="setup-player-row" data-team="blue">
+          <span class="setup-player-name">Player A <small>(Team Blue)</small></span>
+          <div class="segmented" data-player="A">
+            <button class="seg-btn active" data-value="human" type="button">Human</button>
+            <button class="seg-btn" data-value="ai" type="button">AI</button>
+          </div>
+        </div>
+        <div class="setup-player-row" data-team="blue">
+          <span class="setup-player-name">Player B <small>(Team Blue)</small></span>
+          <div class="segmented" data-player="B">
+            <button class="seg-btn active" data-value="human" type="button">Human</button>
+            <button class="seg-btn" data-value="ai" type="button">AI</button>
+          </div>
+        </div>
+        <div class="setup-player-row" data-team="red">
+          <span class="setup-player-name">Player C <small>(Team Red)</small></span>
+          <div class="segmented" data-player="C">
+            <button class="seg-btn active" data-value="human" type="button">Human</button>
+            <button class="seg-btn" data-value="ai" type="button">AI</button>
+          </div>
+        </div>
+        <div class="setup-player-row" data-team="red">
+          <span class="setup-player-name">Player D <small>(Team Red)</small></span>
+          <div class="segmented" data-player="D">
+            <button class="seg-btn active" data-value="human" type="button">Human</button>
+            <button class="seg-btn" data-value="ai" type="button">AI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <h3 data-i18n="aiLevel">سطح هوش مصنوعی</h3>
+      <select class="ai-select" id="setupAiDifficulty">
+        <option value="1">Easy — depth 1 (instant)</option>
+        <option value="2">Medium — depth 2 (~0.5s)</option>
+        <option value="3" selected>Hard — depth 3 (~1-1.5s)</option>
+        <option value="4">Strong — depth 4 (~2-2.5s)</option>
+        <option value="5">Very Strong — depth 5 (~2.5-3s)</option>
+      </select>
+    </div>
+
+    <div class="setup-section">
+      <h3 data-i18n="teamTime">محدودیت زمانی هر تیم</h3>
+      <div class="segmented segmented-wide" id="timeControlPicker">
+        <button class="seg-btn" data-minutes="3" type="button" data-i18n="min3">۳ دقیقه</button>
+        <button class="seg-btn" data-minutes="5" type="button" data-i18n="min5">۵ دقیقه</button>
+        <button class="seg-btn active" data-minutes="10" type="button" data-i18n="min10">۱۰ دقیقه</button>
+        <button class="seg-btn" data-minutes="0" type="button" data-i18n="noLimit">بدون محدودیت</button>
+      </div>
+      <p class="setup-note" data-i18n="timeNote" style="display:block!important">اگر زمان یک تیم تمام شود، همان تیم می‌بازد.</p>
+    </div>
+
+    <button class="start-btn" id="startBotGameBtn" type="button" data-i18n="startGame">شروع بازی</button>
+  </div>
+</div>
+
+
+<div id="onlineSetupView" class="view" style="display:none">
+  <div class="setup-wrap">
+    <button class="back-btn" id="backFromOnlineBtn" type="button" data-i18n="back">→ بازگشت</button>
+    <h2 class="setup-title" data-i18n="online">بازی آنلاین</h2>
+
+    <div class="setup-section">
+      <h3 data-i18n="roomCreateJoin">ایجاد یا پیوستن به اتاق</h3>
+      <div class="segmented segmented-wide" id="onlineModePicker">
+        <button class="seg-btn active" data-mode="create" type="button" data-i18n="createRoom">ساخت اتاق</button>
+        <button class="seg-btn" data-mode="join" type="button" data-i18n="joinCode">پیوستن با کد</button>
+      </div>
+    </div>
+
+    <div id="onlineCreatePanel">
+      <div class="setup-section">
+        <h3 data-i18n="yourSeat">نقش شما</h3>
+        <div class="segmented segmented-wide" id="onlineHostSeatPicker">
+          <button class="seg-btn active" data-seat="A" type="button" data-i18n="seatA">A (آبی)</button>
+          <button class="seg-btn" data-seat="B" type="button" data-i18n="seatB">B (آبی)</button>
+          <button class="seg-btn" data-seat="C" type="button" data-i18n="seatC">C (قرمز)</button>
+          <button class="seg-btn" data-seat="D" type="button" data-i18n="seatD">D (قرمز)</button>
+        </div>
+        <p class="setup-note" data-i18n="hostNote" style="display:block!important">میزبان اتاق را می‌سازد؛ صندلی‌های خالی می‌توانند AI باشند.</p>
+      </div>
+      <div class="setup-section">
+        <h3 data-i18n="aiEmptySeats">سطح AI برای صندلی‌های خالی</h3>
+        <select class="ai-select" id="onlineAiDifficulty">
+          <option value="1">Easy</option>
+          <option value="2">Medium</option>
+          <option value="3" selected>Hard</option>
+          <option value="4">Strong</option>
+          <option value="5">Very Strong</option>
+        </select>
+      </div>
+      <div class="setup-section">
+        <h3 data-i18n="teamTime">محدودیت زمانی هر تیم</h3>
+        <div class="segmented segmented-wide" id="onlineTimePicker">
+          <button class="seg-btn" data-minutes="3" type="button" data-i18n="min3">۳ دقیقه</button>
+          <button class="seg-btn" data-minutes="5" type="button" data-i18n="min5">۵ دقیقه</button>
+          <button class="seg-btn active" data-minutes="10" type="button" data-i18n="min10">۱۰ دقیقه</button>
+          <button class="seg-btn" data-minutes="0" type="button" data-i18n="noLimit">بدون محدودیت</button>
+        </div>
+      </div>
+      <button class="start-btn" id="createOnlineRoomBtn" type="button" data-i18n="createGetCode">ساخت اتاق و دریافت کد</button>
+    </div>
+
+    <div id="onlineJoinPanel" style="display:none">
+      <div class="setup-section">
+        <h3 data-i18n="roomCode">کد اتاق</h3>
+        <input id="joinRoomCodeInput" type="text" maxlength="6" placeholder="A3F9K2"
+          style="width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--panel-border);background:#232732;color:var(--text);font-size:18px;letter-spacing:.2em;text-align:center;text-transform:uppercase;font-family:monospace;">
+        <p class="setup-note" data-i18n="codeFromHost" style="display:block!important">کد ۶ حرفی را از میزبان بگیرید.</p>
+      </div>
+      <div class="setup-section">
+        <h3 data-i18n="desiredSeat">صندلی مورد نظر</h3>
+        <div class="segmented segmented-wide" id="onlineJoinSeatPicker">
+          <button class="seg-btn active" data-seat="A" type="button" data-i18n="seatA">A (آبی)</button>
+          <button class="seg-btn" data-seat="B" type="button" data-i18n="seatB">B (آبی)</button>
+          <button class="seg-btn" data-seat="C" type="button" data-i18n="seatC">C (قرمز)</button>
+          <button class="seg-btn" data-seat="D" type="button" data-i18n="seatD">D (قرمز)</button>
+        </div>
+      </div>
+      <button class="start-btn" id="joinOnlineRoomBtn" type="button" data-i18n="joinRoom">پیوستن به اتاق</button>
+    </div>
+
+    <div id="onlineLobbyPanel" style="display:none;margin-top:18px;">
+      <div class="panel-box" style="text-align:center;">
+        <h3 style="margin-bottom:10px;" data-i18n="roomCode">کد اتاق</h3>
+        <div id="onlineRoomCodeDisplay" style="font-size:28px;font-weight:700;letter-spacing:.25em;color:var(--gold);font-family:monospace;margin:8px 0 12px;"></div>
+        <p class="setup-note" id="onlineLobbyStatus" data-i18n="waitingPlayers" style="display:block!important">در انتظار بازیکنان...</p>
+        <div id="onlinePlayersList" style="margin:12px 0;text-align:right;font-size:13px;line-height:1.9;"></div>
+        <button class="start-btn" id="startOnlineGameBtn" type="button" style="display:none;margin-top:10px;" data-i18n="startGame">شروع بازی</button>
+        <button class="back-btn" id="leaveOnlineLobbyBtn" type="button" style="margin-top:10px;" data-i18n="leaveRoom">ترک اتاق</button>
+      </div>
+    </div>
+
+    <p class="setup-note" id="onlineHelpNote" data-i18n-html="onlineHelp" style="margin-top:16px;display:block!important">
+      <strong>دو حالت:</strong><br>
+      <u>همان سیستم (دو تب):</u> ساخت اتاق → تب جدید همان فایل → پیوستن با کد → شروع بازی.<br>
+      <u>از راه دور (دو دستگاه):</u> فایل را روی <strong>GitHub Pages / هر هاست https</strong> بگذارید،
+      هر دو نفر همان لینک را باز کنند، یکی اتاق بسازد و کد را بفرستد، دیگری بپیوندد.
+      روی فایل محلی (<code>file://</code>) اتصال از راه دور فعال نیست.
+      <br><span id="onlineEnvHint"></span>
+    </p>
+  </div>
+</div>
+
+<div class="app view" id="gameView" style="display:none">
+
+  <button class="back-btn back-btn-ingame" id="backFromGameBtn" type="button" data-i18n="backToMenu">→ بازگشت به منو</button>
+
+
+  <header class="top">
+    <h1 data-i18n="play2v2">شطرنج ۴ نفره · ۲v۲</h1>
+  </header>
+
+  <div class="layout">
+    <div class="center-col">
+
+      <div class="team-panel blue">
+        <div class="team-title" data-i18n="teamBlue">TEAM BLUE</div>
+        <div class="team-clock" id="clockBlue"></div>
+        <div class="player-badges">
+          <div class="player-badge" id="badge-A">
+            <span class="dot" style="background:var(--playerA)"></span>
+            <span class="name">Player A</span>
+            <span class="mode-indicator" id="modeIndicator-A"></span>
+            <button class="takeover-btn" id="takeover-A" data-player="A" type="button" title="واگذاری کنترل Player A به AI">🏳️</button>
+            <span class="king-status alive" id="kingStatusA">ALIVE</span>
+          </div>
+          <div class="player-badge" id="badge-B">
+            <span class="dot" style="background:var(--playerB)"></span>
+            <span class="name">Player B</span>
+            <span class="mode-indicator" id="modeIndicator-B"></span>
+            <button class="takeover-btn" id="takeover-B" data-player="B" type="button" title="واگذاری کنترل Player B به AI">🏳️</button>
+            <span class="king-status alive" id="kingStatusB">ALIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <div class="turn-indicator" id="turnIndicator">CURRENT TURN: Player A</div>
+        <div class="turn-timer" id="turnTimer"></div>
+        <div class="message-bar info" id="messageBar"></div>
+        <div class="premove-banner" id="premoveBanner"></div>
+        <div class="game-over-banner" id="gameOverBanner">
+          <div id="gameOverText"></div>
+          <button type="button" class="game-over-rematch-btn" id="rematchBtn">🔁 بازی دوباره</button>
+        </div>
+        <div class="resign-bar" style="margin-top:8px;text-align:center">
+          <button type="button" class="action-btn danger-btn" id="resign4pBtn" data-i18n="resignSeat">تسلیم (واگذاری به AI)</button>
+        </div>
+        <div class="view-banner" id="viewBanner">
+          <span id="viewBannerText"></span>
+          <button id="returnLiveBtn" class="action-btn" type="button" data-i18n="returnLive">بازگشت به وضعیت فعلی</button>
+        </div>
+      </div>
+
+      <div class="board-scroll">
+        <div class="board-coords coords-4p" id="boardCoords4p">
+          <div class="coord-ranks" id="ranks4p"></div>
+          <div class="chess-board" id="chessBoard"></div>
+          <div class="coord-files" id="files4p"></div>
+        </div>
+      </div>
+
+      <div class="team-panel red">
+        <div class="team-title" data-i18n="teamRed">TEAM RED</div>
+        <div class="team-clock" id="clockRed"></div>
+        <div class="player-badges">
+          <div class="player-badge" id="badge-C">
+            <span class="dot" style="background:var(--playerC)"></span>
+            <span class="name">Player C</span>
+            <span class="mode-indicator" id="modeIndicator-C"></span>
+            <button class="takeover-btn" id="takeover-C" data-player="C" type="button" title="واگذاری کنترل Player C به AI">🏳️</button>
+            <span class="king-status alive" id="kingStatusC">ALIVE</span>
+          </div>
+          <div class="player-badge" id="badge-D">
+            <span class="dot" style="background:var(--playerD)"></span>
+            <span class="name">Player D</span>
+            <span class="mode-indicator" id="modeIndicator-D"></span>
+            <button class="takeover-btn" id="takeover-D" data-player="D" type="button" title="واگذاری کنترل Player D به AI">🏳️</button>
+            <span class="king-status alive" id="kingStatusD">ALIVE</span>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+    <div class="sidebar">
+      <div class="panel-box">
+        <h3 data-i18n="moveHistory">تاریخچه حرکات</h3>
+        <ol class="move-list" id="moveList"></ol>
+        <ul class="event-list" id="eventList"></ul>
+      </div>
+
+      <div class="panel-box">
+        <h3 data-i18n="aiEngineTitle">موتور هوش مصنوعی</h3>
+        <select class="ai-select" id="aiDifficulty" style="display:none">
+          <option value="1">Easy — depth 1 (instant)</option>
+          <option value="2">Medium — depth 2 (~0.5s)</option>
+          <option value="3" selected>Hard — depth 3 (~1-1.5s)</option>
+          <option value="4">Strong — depth 4 (~2-2.5s)</option>
+          <option value="5">Very Strong — depth 5 (~2.5-3s)</option>
+        </select>
+        <div id="aiEngineStatus" style="margin-top:8px;font-size:11px;color:var(--text-muted);"></div>
+        <p class="ai-note" data-i18n="aiNote" style="display:block!important">AI level and Human/AI seats are set on the bot setup screen.</p>
+      </div>
+
+
+      <div class="panel-box">
+        <h3 data-i18n="statusControl">وضعیت و کنترل</h3>
+        <pre class="debug" id="debugInfo"></pre>
+        <div class="btn-row">
+          <button class="action-btn" id="restartBtn" type="button" data-i18n="restart">شروع دوباره</button>
+          <button class="action-btn" id="undoBtn" type="button" data-i18n="undo">بازگشت حرکت</button>
+          <button class="action-btn" id="muteBtn" type="button" title="قطع/وصل صداها">🔊</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="engine.js"></script>
+<script src="game-4p.js"></script>
+<script src="online.js"></script>
+<script src="game-1v1.js"></script>
+<script src="ui-settings.js"></script>
+</body>
+</html>
