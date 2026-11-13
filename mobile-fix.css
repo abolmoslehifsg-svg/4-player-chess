@@ -1,0 +1,118 @@
+/* Mobile layout fixes — 4-player (16x8) + 1v1 (8x8) */
+/* Loaded after styles.css */
+
+.chess-board{
+  --cell: clamp(16px, calc((100vw - 52px) / 16), 42px) !important;
+  grid-template-columns: repeat(16, var(--cell)) !important;
+  grid-template-rows: repeat(8, var(--cell)) !important;
+  width: calc(16 * var(--cell)) !important;
+  height: calc(8 * var(--cell)) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+}
+
+.chess-board .cell{
+  width: var(--cell) !important;
+  height: var(--cell) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+.board-coords.coords-4p{
+  --cell: clamp(16px, calc((100vw - 52px) / 16), 42px);
+  max-width: 100%;
+}
+
+.board-coords.coords-4p .coord-ranks{
+  grid-template-rows: repeat(8, var(--cell, 28px)) !important;
+}
+.board-coords.coords-4p .coord-files{
+  grid-template-columns: repeat(16, var(--cell, 28px)) !important;
+}
+
+.chess-board-1v1{
+  width: min(92vw - 36px, 92dvh - 140px, 520px) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1;
+}
+
+.board-coords.coords-1v1 .coord-files{
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+}
+.board-coords.coords-1v1 .coord-ranks{
+  grid-template-rows: repeat(8, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 720px){
+  .chess-board{
+    --cell: clamp(14px, calc((100vw - 36px) / 16), 36px) !important;
+    width: calc(16 * var(--cell)) !important;
+    height: calc(8 * var(--cell)) !important;
+  }
+  .board-coords.coords-4p{
+    --cell: clamp(14px, calc((100vw - 36px) / 16), 36px);
+  }
+  .chess-board .piece,
+  .piece{
+    font-size: clamp(11px, calc(var(--cell, 20px) * 0.72), 22px) !important;
+  }
+  .badge-letter{ font-size: 7px !important; }
+
+  #gameView .board-scroll,
+  #game1v1View .board-scroll,
+  .board-scroll{
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    max-width: 100%;
+    padding: 4px 2px 16px !important;
+  }
+
+  #game1v1View .chess-board-1v1{
+    width: min(96vw - 24px, 72dvh, 100%) !important;
+    max-width: 100% !important;
+  }
+  #game1v1View .piece-1v1{
+    font-size: clamp(16px, 7.2vw, 34px) !important;
+  }
+  #game1v1View .layout{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  #game1v1View .sidebar{
+    width: 100% !important;
+    max-width: 100%;
+  }
+  .board-coords{
+    grid-template-columns: 14px auto;
+    grid-template-rows: auto 14px;
+    gap: 1px 2px;
+  }
+  .board-coords .coord-ranks,
+  .board-coords .coord-files{
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 720px) and (orientation: portrait){
+  #gameView .chess-board{
+    --cell: min(34px, calc((100vw - 32px) / 16)) !important;
+    width: calc(16 * var(--cell)) !important;
+    height: calc(8 * var(--cell)) !important;
+  }
+  #gameView .piece{
+    font-size: calc(var(--cell) * 0.72) !important;
+  }
+}
+
+@media (max-width: 1000px) and (orientation: landscape){
+  #gameView .chess-board{
+    --cell: min(40px, calc((100dvh - 64px) / 8), calc((100vw - 20px) / 16)) !important;
+  }
+  #game1v1View .chess-board-1v1{
+    width: min(56dvh, 70vw, 420px) !important;
+  }
+  #game1v1View .sidebar{ display: none !important; }
+}
