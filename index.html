@@ -1,23 +1,34 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="midnight">
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>شطرنج — بازی کن</title>
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="mobile-fix.css">
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-</head>
-<body>
-<!-- NOTE: full index body restored from repo via separate fetch if needed -->
 <script>
-// Redirect-style bootstrap: load original index content structure from known scripts
+(async function () {
+  try {
+    const res = await fetch('https://cdn.jsdelivr.net/gh/abolmoslehifsg-svg/4-player-chess@e2d79722/index.html');
+    let html = await res.text();
+    // point styles to local (which @imports the good commit) + mobile-fix
+    html = html.replace(
+      /<link rel="stylesheet" href="styles\.css">/,
+      '<link rel="stylesheet" href="styles.css">\n<link rel="stylesheet" href="mobile-fix.css">'
+    );
+    html = html.replace(
+      'content="width=device-width, initial-scale=1.0"',
+      'content="width=device-width, initial-scale=1.0, viewport-fit=cover"'
+    );
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (e) {
+    document.body.innerHTML = '<p style="font-family:sans-serif;padding:24px;direction:rtl">خطا در بارگذاری بازی. صفحه را رفرش کنید.</p>';
+    console.error(e);
+  }
+})();
 </script>
-<script src="engine.js"></script>
-<script src="game-1v1.js"></script>
-<script src="game-4p.js"></script>
-<script src="online.js"></script>
-<script src="puzzles.js"></script>
-<script src="ui-settings.js"></script>
+</head>
+<body style="margin:0;background:#14161c;color:#e9e6dd;font-family:sans-serif;padding:24px;direction:rtl">
+در حال بارگذاری…
 </body>
 </html>
