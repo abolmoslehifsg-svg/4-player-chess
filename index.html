@@ -7,10 +7,8 @@
 <script>
 (async function () {
   try {
-    // Last known good full HTML commit
     const res = await fetch('https://cdn.jsdelivr.net/gh/abolmoslehifsg-svg/4-player-chess@e2d79722eab8d5a69a3105cd1afc839143ac7319/index.html');
     let html = await res.text();
-    // Force local styles + mobile-fix so we can iterate without CDN lag
     html = html.replace(
       /<link rel="stylesheet" href="styles\.css">/,
       '<link rel="stylesheet" href="styles.css">\n<link rel="stylesheet" href="mobile-fix.css">'
@@ -22,12 +20,96 @@
     document.open();
     document.write(html);
     document.close();
+
+    // After the full app loads, reorganize the home page structure
+    setTimeout(function restructureHome() {
+      const main = document.querySelector('.home-main');
+      if (!main) { setTimeout(restructureHome, 200); return; }
+
+      const card2v2 = document.getElementById('cardPlayBot');
+      const card1v1 = document.getElementById('cardPlay1v1');
+      const cardBots = document.getElementById('cardPlayBotsHub');
+      const cardOnline = document.getElementById('cardPlayOnline');
+      const cardPuzzles = document.getElementById('cardPuzzles');
+      const cardSubmit = document.getElementById('cardSubmitPuzzle');
+      const grid = document.querySelector('.cc-play-grid.mode-cards');
+      if (!grid || !card2v2) return;
+
+      // Create Online button clone style if needed — keep original
+      // Build 1v1 section
+      let section1v1 = document.getElementById('section1v1');
+      if (!section1v1) {
+        section1v1 = document.createElement('section');
+        section1v1.id = 'section1v1';
+        section1v1.className = 'home-modes-section';
+        section1v1.innerHTML = '<h2 class="home-section-title">۱v۱</h2><p class="home-section-sub">حالت‌های دو نفره و تمرین</p>';
+        const grid1 = document.createElement('section');
+        grid1.className = 'cc-play-grid mode-cards';
+        section1v1.appendChild(grid1);
+
+        // Move 1v1 related cards
+        if (card1v1) grid1.appendChild(card1v1);
+        // Infiltrator card (may not exist in old HTML — we add it)
+        let cardInf = document.getElementById('cardPlayInfiltrator');
+        if (!cardInf) {
+          cardInf = document.createElement('button');
+          cardInf.className = 'mode-card cc-card';
+          cardInf.id = 'cardPlayInfiltrator';
+          cardInf.type = 'button';
+          cardInf.innerHTML = '<div class="cc-card-top"><span class="mode-card-icon">🗡️</span></div><div class="mode-card-title">حالت نفوذی</div><div class="mode-card-desc">هر مهره (به‌جز شاه و وزیر) · کنترل مشترک</div><span class="cc-cta cc-cta-ghost">شروع</span>';
+        }
+        grid1.appendChild(cardInf);
+        if (cardBots) grid1.appendChild(cardBots);
+
+        // Other section
+        const sectionOther = document.createElement('section');
+        sectionOther.id = 'sectionOther';
+        sectionOther.className = 'home-modes-section';
+        sectionOther.innerHTML = '<h2 class="home-section-title">ابزار و پازل</h2><p class="home-section-sub">تمرین و ارسال موقعیت</p>';
+        const grid2 = document.createElement('section');
+        grid2.className = 'cc-play-grid mode-cards';
+        sectionOther.appendChild(grid2);
+        if (cardPuzzles) grid2.appendChild(cardPuzzles);
+        if (cardSubmit) grid2.appendChild(cardSubmit);
+
+        // Place Online right after featured 2v2
+        if (cardOnline && card2v2 && card2v2.parentNode) {
+          card2v2.parentNode.insertBefore(cardOnline, card2v2.nextSibling);
+          cardOnline.style.marginTop = '14px';
+        }
+
+        // Insert sections after the grid (or replace grid)
+        if (grid.parentNode) {
+          grid.parentNode.insertBefore(section1v1, grid);
+          grid.parentNode.insertBefore(sectionOther, grid);
+          // Hide original empty grid if cards moved
+          if (grid.children.length === 0) grid.style.display = 'none';
+        }
+      }
+
+      // Ensure Infiltrator click is wired (ui-settings may run later)
+      const infBtn = document.getElementById('cardPlayInfiltrator');
+      if (infBtn && !infBtn._wired) {
+        infBtn._wired = true;
+        infBtn.addEventListener('click', function() {
+          if (typeof infiltratorMode !== 'undefined') infiltratorMode = true;
+          if (typeof s1ActiveBot !== 'undefined') s1ActiveBot = null;
+          if (typeof c1InitStockfish === 'function') c1InitStockfish();
+          if (typeof showView === 'function') showView('setup1v1View');
+        });
+      }
+    }, 300);
   } catch (e) {
-    document.body.innerHTML = '<p style="font-family:sans-serif;padding:24px;direction:rtl;max-width:480px;margin:40px auto;line-height:1.8">خطا در بارگذاری بازی.<br>صفحه را رفرش کنید یا اتصال اینترنت را بررسی کنید.<br><br><small style="opacity:.7">' + (e && e.message ? e.message : e) + '</small></p>';
+    document.body.innerHTML = '<p style="font-family:sans-serif;padding:24px;direction:rtl;max-width:480px;margin:40px auto;line-height:1.8">خطا در بارگذاری بازی.<br>صفحه را رفرش کنید.<br><br><small style="opacity:.7">' + (e && e.message ? e.message : e) + '</small></p>';
     console.error(e);
   }
 })();
 </script>
+<style>
+.home-modes-section { width:100%; margin-top:28px; }
+.home-section-title { font-size:18px; font-weight:700; color:var(--text,#e9e6dd); margin:0 0 4px; }
+.home-section-sub { font-size:13px; color:var(--text-muted,#8b8f9e); margin:0 0 16px; }
+</style>
 </head>
 <body style="margin:0;background:#14161c;color:#e9e6dd;font-family:sans-serif;padding:24px;direction:rtl">
 در حال بارگذاری بازی…
